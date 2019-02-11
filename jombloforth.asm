@@ -49,10 +49,13 @@
 %assign JOMBLO_VERSION 1
 ;; (that's a joke, btw)
 
+;; Our first word
 %macro NEXT 0
 	lodsq
 	jmp [rax]
 %endmacro
+
+;; Helper for pushing/popping from the return stack
 
 %macro PUSHRSP 1
 	lea rbp,[rbp-8]
@@ -64,6 +67,7 @@
 	lea rbp,[rbp+8]
 %endmacro
 
+;; First Non-macro Word
 section .text
 DOCOL:
 	PUSHRSP rsi
@@ -73,15 +77,60 @@ DOCOL:
 
 global _start
 _start:
-	cld			 ; Clear direction flag
-	mov var_S0,rsp		 ; Save the initial data stack pointer in FORTH variable S0
-	mov rbp,return_stack_top ; Initialize the return stack
-	call set_up_data_segmt
-	mov rsi,cold_start
-	NEXT
+	; cld			 ; Clear direction flag
+	; mov var_S0,rsp		 ; Save the initial data stack pointer in FORTH variable S0
+	; mov rbp,return_stack_top ; Initialize the return stack
+	; call set_up_data_segmt
+	; mov rsi,cold_start
+	; NEXT
 	mov rax,60 		 ; exit (for now)
 	mov rdi,0
 	syscall
 
+section .rodata
 cold_start:
-	QUIT
+	; QUIT
+	db 0
+
+%assign F_IMMED 0x80
+%assign F_HIDDEN 0x20
+%assign F_LENMASK 0x1f
+%assign link 0
+
+%macro defword 3-4 0 ; name,namelen,label,flags=0
+section .rodata
+align 4
+global name_ %+ %3
+name_ %+ %3:
+	dq link
+%assign link name_ %+ %3
+	db %4 + %2
+	db %1
+align 4
+global %3
+%3:
+	dq DOCOL
+%endmacro
+
+%macro decode 3-4 0 ; name,namelen,label,flags=0
+;section .rodata
+;align 4
+;global name_%3
+;name_%3:
+;	dq link
+;%assign link name_%3
+;	db %4 + %2
+	;	db %1
+section .rodata
+align 4
+global %3
+%3:
+	dq code_%3
+section .text
+global code_%3
+code_%3:
+%endmacro
+
+	defcode "DROP",4
+	pop rax
+	NEXT

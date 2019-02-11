@@ -9,4 +9,7 @@ jombloforth: jombloforth.o
 dump: jombloforth.o
 	objdump -d -M intel jombloforth.o
 
-.PHONY: dump all
+dumpall: jombloforth.o
+	objdump -j .data -j .text -d -M intel jombloforth.o
+
+.PHONY: dump dumpall all
