@@ -7,9 +7,9 @@ jombloforth: jombloforth.o
 	ld -o jombloforth jombloforth.o
 
 dump: jombloforth.o
-	objdump -d -M intel jombloforth.o
+	objdump -j .rodata -j .data -j .text -d -M intel jombloforth.o
 
-dumpall: jombloforth.o
-	objdump -j .data -j .text -d -M intel jombloforth.o
+clean:
+	rm jombloforth.o jombloforth
 
-.PHONY: dump dumpall all
+.PHONY: dump all
