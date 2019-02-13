@@ -9,6 +9,9 @@ jombloforth: jombloforth.o
 dump: jombloforth.o
 	objdump -j .rodata -j .data -j .text -d -M intel jombloforth.o
 
+dumpall: jombloforth.o
+	objdump -D -M intel jombloforth.o
+
 clean:
 	rm jombloforth.o jombloforth
 
