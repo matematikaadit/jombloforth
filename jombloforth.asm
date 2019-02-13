@@ -95,15 +95,15 @@ cold_start:
 %assign F_IMMED 0x80
 %assign F_HIDDEN 0x20
 %assign F_LENMASK 0x1f
-%assign link 0
+%define link 0
 
 %macro defword 3-4 0 ; name,namelen,label,flags=0
 section .rodata
 align 4
-global name_ %+ %3
-name_ %+ %3:
+global name_%3
+name_%3:
 	dq link
-%assign link name_ %+ %3
+%define link name_%3
 	db %4 + %2
 	db %1
 align 4
@@ -112,25 +112,24 @@ global %3
 	dq DOCOL
 %endmacro
 
-; %macro decode 3-4 0 ; name,namelen,label,flags=0
-;section .rodata
-;align 4
-;global name_%3
-;name_%3:
-;	dq link
-;%assign link name_%3
-;	db %4 + %2
-	;	db %1
-; section .rodata
-; align 4
-; global %3
-; %3:
-; 	dq code_%3
-; section .text
-; global code_%3
-; code_%3:
-; %endmacro
+%macro defcode 3-4 0 ; name,namelen,label,flags=0
+section .rodata
+align 4
+global name_%3
+name_%3:
+	dq link
+%define link name_%3
+	db %4 + %2
+	db %1
+align 4
+global %3
+%3:
+ 	dq code_%3
+section .text
+global code_%3
+code_%3:
+%endmacro
 
-; 	defcode "DROP",4
-; 	pop rax
-; 	NEXT
+ 	defcode "DROP",4,DROP
+ 	pop rax
+ 	NEXT
