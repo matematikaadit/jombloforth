@@ -97,16 +97,20 @@ cold_start:
 %assign F_LENMASK 0x1f
 %define link 0
 
+%macro alignz 1
+align %1,db 0
+%endmacro
+
 %macro defword 3-4 0 ; name,namelen,label,flags=0
 section .rodata
-align 4
+alignz 4
 global name_%3
 name_%3:
 	dq link
 %define link name_%3
 	db %4 + %2
 	db %1
-align 4
+alignz 4
 global %3
 %3:
 	dq DOCOL
@@ -114,14 +118,14 @@ global %3
 
 %macro defcode 3-4 0 ; name,namelen,label,flags=0
 section .rodata
-align 4
+alignz 4
 global name_%3
 name_%3:
 	dq link
 %define link name_%3
 	db %4 + %2
 	db %1
-align 4
+alignz 4
 global %3
 %3:
  	dq code_%3
@@ -133,3 +137,15 @@ code_%3:
  	defcode "DROP",4,DROP
  	pop rax
  	NEXT
+
+	defcode "SWAP",4,SWAP
+	pop rax
+	pop rbx
+	push rax
+	push rbx
+	NEXT
+
+	defcode "DUP",3,DUP
+	mov rax,[rsp]
+	push rax
+	NEXT
