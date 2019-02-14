@@ -67,13 +67,14 @@
 	lea rbp,[rbp+8]
 %endmacro
 
-;; First Non-macro Word
+;; First Non-Macro Word
 section .text
 DOCOL:
 	PUSHRSP rsi
 	add rax,8
 	mov rsi,rax
 	NEXT
+
 
 global _start
 _start:
@@ -92,58 +93,75 @@ cold_start:
 	; QUIT
 	db 0
 
-%assign F_IMMED 0x80
-%assign F_HIDDEN 0x20
-%assign F_LENMASK 0x1f
-%define link 0
-
-%define zalign(n) align n,db 0
-
-%macro defword 3-4 0 ; name,namelen,label,flags=0
 section .rodata
-zalign(4)
-global name_%3
-name_%3:
+F_IMMED: equ 0x80
+F_HIDDEN: equ 0x20
+F_LENMASK: equ 0x1f
+%define link 0xFACEFEEDDEADBEEF
+%define name(x) name_ %+ x
+
+;; defword name, label, flags=0
+%macro defword 2-3 0
+;; linked list
+section .rodata
+align 8, db 0
+global name_%2
+name_%2:
 	dq link
-%define link name_%3
-	db %4 + %2
+; %define link name(%2)
+%strlen NAME_LEN %1
+	db NAME_LEN | %3
 	db %1
-zalign(4)
-global %3
-%3:
+;; word definitions
+align 8, db 0
+global $%2
+$%2:
 	dq DOCOL
+
 %endmacro
 
-%macro defcode 3-4 0 ; name,namelen,label,flags=0
+; defcode name, label, flags=0
+%macro defcode 2-3 0
+; linked list
 section .rodata
-zalign(4)
-global name_%3
-name_%3:
+align 8, db 0
+global name_%2
+name_%2:
 	dq link
-%define link name_%3
-	db %4 + %2
+; %define link name(%2)
+%strlen NAME_LEN %1
+	db NAME_LEN | %3
 	db %1
-zalign(4)
-global %3
-%3:
- 	dq code_%3
+; word definition
+align 8, db 0
+global $%2
+$%2:
+ 	dq code_%2
+
+; the code
 section .text
-global code_%3
-code_%3:
+
+align 16
+global code_%2
+code_%2:
+
 %endmacro
 
- 	defcode "DROP",4,DROP
+defcode "DROP",DROP
+%define link name(DROP)
  	pop rax
  	NEXT
 
-	defcode "SWAP",4,SWAP
+defcode "SWAP",SWAP
+%define link name(SWAP)
 	pop rax
 	pop rbx
 	push rax
 	push rbx
 	NEXT
 
-	defcode "DUP",3,DUP
+defcode "DUP",DUP
+%define link name(DUP)
 	mov rax,[rsp]
 	push rax
 	NEXT
