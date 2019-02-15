@@ -38,7 +38,8 @@
 ;;
 ;; For more information, please refer to <http://unlicense.org>
 
-
+;; see defining constant section
+%include "unistd_64.inc"
 
 
 ;; MACRO DEFINITION
@@ -84,7 +85,7 @@ _start:
 	; call set_up_data_segment
 	mov rsi, cold_start
 	NEXT
-	mov rax, 60                ; exit (for now)
+	mov rax, __NR_exit        ; exit (for now)
 	mov rdi, 0
 	syscall
 
@@ -443,7 +444,7 @@ defconst "F_LENMASK", __F_LENMASK, F_LENMASK
 ;;
 ;;    sed 's/#/%/;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
 ;;
-%include "unistd_64.inc"
+;; see %include "unistd_64.inc" above
 
 defsys EXIT,  exit
 defsys OPEN,  open
@@ -510,9 +511,15 @@ defcode "DSP!", DSPSTORE
 
 section .text
 set_up_data_segment:
-	xor rbx, rbx
+	xor rdi, rdi
+	mov rax, __NR_brk ; brk(0)
+	syscall
+	mov rax, var_HERE
+	add rax, INITIAL_DATA_SEGMENT_SIZE
+	mov rbx, rax
 	mov rax, __NR_brk
 	syscall
+	ret
 
 ;;;; buffers allocation
 
