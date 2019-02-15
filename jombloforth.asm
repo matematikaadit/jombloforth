@@ -562,6 +562,7 @@ _EMIT:
 	mov rdx, 1
 	mov rax, __NR_write
 	syscall
+	pop rsi
 	ret
 
 section .data
