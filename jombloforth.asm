@@ -41,6 +41,11 @@
 ;; see defining constant section
 %include "unistd_64.inc"
 
+;; see buffer allocation
+%define RETURN_STACK_SIZE 8192
+%define BUFFER_SIZE 4096
+
+
 
 ;; MACRO DEFINITION
 ;; ----------------
@@ -82,19 +87,17 @@ _start:
 	cld                       ; Clear direction flag
 	mov [var_S0], rsp         ; Save the initial data stack pointer in FORTH variable S0
 	mov rbp, return_stack_top ; Initialize the return stack
-	; call set_up_data_segment
+	call set_up_data_segment
 	mov rsi, cold_start
 	NEXT
+	xor rdi, rdi
 	mov rax, __NR_exit        ; exit (for now)
-	mov rdi, 0
 	syscall
 
 section .rodata
 cold_start:
 	; QUIT
 	db 0
-
-section .rodata
 
 ;; Various flags for the dictionary word header
 %define F_IMMED 0x80
@@ -442,7 +445,7 @@ defconst "F_LENMASK", __F_LENMASK, F_LENMASK
 
 ;; syscall number
 ;;
-;;    sed 's/#/%/;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
+;;    sed 's_#_%_;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
 ;;
 ;; see %include "unistd_64.inc" above
 
@@ -459,16 +462,14 @@ defsys BRK,   brk
 	defconst name, __O_%1, %2
 %endmacro
 
-defo RDONLY, 0
-defo WRONLY, 1
-defo RDWR,   2
-
-defo CREAT,    0o0100
-defo EXCL,     0o0200
-defo TRUNC,    0o1000
-defo APPEND,   0o2000
-defo NONBLOCK, 0o4000
-;; TODO: Investigate this magic number
+defo RDONLY,      0o
+defo WRONLY,      1o
+defo RDWR,        2o
+defo CREAT,     100o
+defo EXCL,      200o
+defo TRUNC,    1000o
+defo APPEND,   2000o
+defo NONBLOCK, 4000o
 
 ;;;; RETURN STACK
 
@@ -506,15 +507,58 @@ defcode "DSP!", DSPSTORE
 	pop rsp
 	NEXT
 
+;;;; INPUT OUTPUT
+
+defcode "KEY", KEY
+	call _KEY
+	push rax
+	NEXT
+_KEY:
+	mov rbx, [currkey]
+	cmp rbx, [bufftop]
+	jge .full
+	xor rax, rax
+	mov al, [rbx]
+	inc rbx               ; QUESTION: inc? not add rbx, 4?
+	mov [currkey], rbx
+	ret
+
+.full:
+	xor rdi, rdi
+	push rsi              ; save rsi temporarily
+	mov rsi, [buffer]
+	mov [currkey], rsi
+	mov rdx, BUFFER_SIZE
+	mov rax, __NR_read
+	syscall
+	test rax, rax
+	jbe .eof
+	add rsi, rax
+	mov [bufftop], rsi
+	pop rsi                ; restore it
+	jmp _KEY
+
+.eof:
+	xor rdi, rdi
+	mov rax, __NR_exit
+	syscall
+
+section .data
+align 8, db 0
+currkey:
+	dq buffer
+bufftop:
+	dq buffer
+
 ;;;; Data Segment
-%define INITIAL_DATA_SEGMENT_SIZE 65535
+%define INITIAL_DATA_SEGMENT_SIZE 65536
 
 section .text
 set_up_data_segment:
 	xor rdi, rdi
 	mov rax, __NR_brk ; brk(0)
 	syscall
-	mov var_HERE, rax
+	mov [var_HERE], rax
 	add rax, INITIAL_DATA_SEGMENT_SIZE
 	mov rbx, rax
 	mov rax, __NR_brk
@@ -522,9 +566,6 @@ set_up_data_segment:
 	ret
 
 ;;;; buffers allocation
-
-%define RETURN_STACK_SIZE 8192
-%define BUFFER_SIZE 4096
 
 section .bss
 align 4096
