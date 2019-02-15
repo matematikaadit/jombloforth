@@ -6,11 +6,11 @@ jombloforth.o: jombloforth.asm
 jombloforth: jombloforth.o
 	ld -o jombloforth jombloforth.o
 
-dump: jombloforth.o
-	objdump -z -j .rodata -j .data -j .text -d -M intel jombloforth.o
+dump: jombloforth
+	objdump -z -j .rodata -j .data -j .text -d -M intel jombloforth
 
-dumpall: jombloforth.o
-	objdump -z -D -M intel jombloforth.o
+dumpall: jombloforth
+	objdump -z -D -M intel jombloforth
 
 clean:
 	rm jombloforth.o jombloforth

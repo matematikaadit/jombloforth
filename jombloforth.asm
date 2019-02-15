@@ -58,34 +58,34 @@
 ;; Helper for pushing/popping from the return stack
 
 %macro PUSHRSP 1
-	lea rbp,[rbp-8]
-	mov rbp,%1
+	lea rbp, [rbp-8]
+	mov rbp, %1
 %endmacro
 
 %macro POPRSP 1
-	mov %1,[rbp]
-	lea rbp,[rbp+8]
+	mov %1, [rbp]
+	lea rbp, [rbp+8]
 %endmacro
 
 ;; First Non-Macro Word
 section .text
 DOCOL:
 	PUSHRSP rsi
-	add rax,8
-	mov rsi,rax
+	add rax, 8
+	mov rsi, rax
 	NEXT
 
 
 global _start
 _start:
-	; cld			 ; Clear direction flag
-	; mov var_S0,rsp		 ; Save the initial data stack pointer in FORTH variable S0
+	; cld                      ; Clear direction flag
+	; mov var_S0,rsp           ; Save the initial data stack pointer in FORTH variable S0
 	; mov rbp,return_stack_top ; Initialize the return stack
 	; call set_up_data_segmt
 	; mov rsi,cold_start
 	; NEXT
-	mov rax,60 		 ; exit (for now)
-	mov rdi,0
+	mov rax, 60                ; exit (for now)
+	mov rdi, 0
 	syscall
 
 section .rodata
@@ -94,74 +94,192 @@ cold_start:
 	db 0
 
 section .rodata
-F_IMMED: equ 0x80
-F_HIDDEN: equ 0x20
-F_LENMASK: equ 0x1f
-%define link 0xFACEFEEDDEADBEEF
-%define name(x) name_ %+ x
 
-;; defword name, label, flags=0
-%macro defword 2-3 0
-;; linked list
-section .rodata
-align 8, db 0
-global name_%2
-name_%2:
-	dq link
-; %define link name(%2)
-%strlen NAME_LEN %1
-	db NAME_LEN | %3
-	db %1
-;; word definitions
-align 8, db 0
-global $%2
-$%2:
-	dq DOCOL
+;; Various flags for the dictionary word header
+F_IMMED: db 0x80
+F_HIDDEN: db 0x20
+F_LENMASK: db 0x1f
 
+;; Holds previously defined word
+;; Starts as null/zero
+%define link 0
+
+;; Macro for defining forth word
+;;
+;;     defword name, label, flag
+;;
+%macro defword 3
+	%strlen name_len %1
+
+	;; dictionary word header
+	section .rodata
+
+	align 8, db 0
+	global name_%2
+	name_%2:
+		dq link
+		db name_len + %4
+		db %1
+
+	;; update link to point to this word's header
+	%define link name_%2
+
+	;; word definitions, starts with DOCOL
+	align 8, db 0
+	global %2
+	%2:
+		dq DOCOL
 %endmacro
 
-; defcode name, label, flags=0
-%macro defcode 2-3 0
-; linked list
-section .rodata
-align 8, db 0
-global name_%2
-name_%2:
-	dq link
-; %define link name(%2)
-%strlen NAME_LEN %1
-	db NAME_LEN | %3
-	db %1
-; word definition
-align 8, db 0
-global $%2
-$%2:
- 	dq code_%2
-
-; the code
-section .text
-
-align 16
-global code_%2
-code_%2:
-
+;; If flag not supplied, it defaults to 0
+%macro defword 2
+	defword %1, %2, 0
 %endmacro
 
-defcode "DROP",DROP
-%define link name(DROP)
- 	pop rax
- 	NEXT
+;; Macro for defining native word
+;;
+;;     defcode name, label, flag
+;;
+%macro defcode 3
+	%strlen name_len %1
 
-defcode "SWAP",SWAP
-%define link name(SWAP)
+	;; dictionary word header
+	section .rodata
+	align 8, db 0
+	global name_%2
+	name_%2:
+		dq link
+		db name_len + %3
+		db %1
+
+	;; update link to point to this word's header
+	%define link name_%2
+
+	;; word definition, link to the native code
+	align 8, db 0
+	global %2
+	%2:
+		dq code_%2
+
+	;; native code
+	section .text
+	align 16
+	global code_%2
+	code_%2:
+%endmacro
+
+;; If flags not supplied, it default to 0
+%macro defcode 2
+       defcode %1, %2, 0
+%endmacro
+
+defcode "DROP", DROP
+	pop rax
+	NEXT
+
+defcode "SWAP", SWAP
 	pop rax
 	pop rbx
 	push rax
 	push rbx
 	NEXT
 
-defcode "DUP",DUP
-%define link name(DUP)
-	mov rax,[rsp]
+defcode "DUP", DUP
+	mov rax, [rsp]
+	push rax
+	NEXT
+
+defcode "OVER", OVER
+	mov rax, [rsp+8]
+	push rax
+	NEXT
+
+defcode "ROT", ROT
+	pop rax
+	pop rbx
+	pop rcx
+	push rbx
+	push rax
+	push rcx
+	NEXT
+
+defcode "-ROT", NROT
+	pop rax
+	pop rbx
+	pop rcx
+	push rax
+	push rcx
+	push rbx
+	NEXT
+
+defcode "2DROP", TWODROP
+	pop rax
+	pop rax
+	NEXT
+
+defcode "2DUP", TWODUP
+	mov rax, [rsp]
+	mov rbx, [rsp+8]
+	push rbx
+	push rax
+	NEXT
+
+defcode "2SWAP", TWOSWAP
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	push rbx
+	push rax
+	push rdx
+	push rcx
+	NEXT
+
+defcode "?DUP", QDUP
+	mov rax, [rsp]
+	test rax, rax
+	jz .next
+	push rax
+.next	NEXT
+
+defcode "1+", INCR
+	inc qword [rsp]
+	NEXT
+
+defcode "1-", DECR
+	dec qword [rsp]
+	NEXT
+
+defcode "8+", INCR8
+	add qword [rsp], 8
+	NEXT
+
+defcode "8-", DECR8
+	sub qword [rsp], 8
+	NEXT
+
+defcode "+", ADD
+	pop rax
+	add [rsp], rax
+	NEXT
+
+defcode "-", SUB
+	pop rax
+	sub [rsp], rax
+	NEXT
+
+defcode "*", MUL
+	pop rax
+	pop rbx
+	imul rax, rbx
+	push rax
+	NEXT
+
+defcode "/MOD", DIVMOD
+	xor rdx, rdx
+	pop rbx
+	pop rax
+	idiv rbx
+	push rdx
 	push rax
 	NEXT
