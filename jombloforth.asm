@@ -550,6 +550,23 @@ currkey:
 bufftop:
 	dq buffer
 
+defcode "EMIT", EMIT
+	pop rax
+	call _EMIT
+	NEXT
+_EMIT:
+	mov rdi, 1
+	mov [emit_scratch], al
+	push rsi
+	mov rsi, emit_scratch
+	mov rdx, 1
+	mov rax, __NR_write
+	syscall
+	ret
+
+section .data
+emit_scratch: db 0
+
 ;;;; Data Segment
 %define INITIAL_DATA_SEGMENT_SIZE 65536
 
