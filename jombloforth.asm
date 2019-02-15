@@ -78,11 +78,11 @@ DOCOL:
 
 global _start
 _start:
-	; cld                      ; Clear direction flag
-	; mov var_S0,rsp           ; Save the initial data stack pointer in FORTH variable S0
-	; mov rbp,return_stack_top ; Initialize the return stack
-	; call set_up_data_segmt
-	; mov rsi,cold_start
+	cld                      ; Clear direction flag
+	; mov var_S0, rsp           ; Save the initial data stack pointer in FORTH variable S0
+	; mov rbp, return_stack_top ; Initialize the return stack
+	; call set_up_data_segment
+	; mov rsi, cold_start
 	; NEXT
 	mov rax, 60                ; exit (for now)
 	mov rdi, 0
@@ -288,12 +288,12 @@ defcode "/MOD", DIVMOD
 		NEXT
 %endmacro
 
-defcmp "=", EQU, e
+defcmp "=",  EQU, e
 defcmp "<>", NEQ, ne
-defcmp "<", LT, l
-defcmp ">", GT, g
-defcmp "<=", LE, le
-defcmp ">=", GE, ge
+defcmp "<",  LT,  l
+defcmp ">",  GT,  g
+defcmp "<=", LE,  le
+defcmp ">=", GE,  ge
 
 %macro deftest 3
 	defcode %1, %2
@@ -305,12 +305,12 @@ defcmp ">=", GE, ge
 		NEXT
 %endmacro
 
-deftest "0=", ZEQU, z
+deftest "0=",  ZEQU,  z
 deftest "0<>", ZNEQU, nz
-deftest "0<", ZLT, l
-deftest "0>", ZGT, g
-deftest "0<=", ZLE, le
-deftest "0>=", ZGE, ge
+deftest "0<",  ZLT,   l
+deftest "0>",  ZGT,   g
+deftest "0<=", ZLE,   le
+deftest "0>=", ZGE,   ge
 
 defcode "AND", AND
 	pop rax
@@ -411,7 +411,7 @@ defcode "CMOVE", CMOVE
 	section .data
 	align 8, db 0
 	var_%2:
-		db %3
+		dq %3
 %endmacro
 
 defvar "STATE", STATE
@@ -429,8 +429,9 @@ defvar "BASE", BASE, 10
 defconst "VERSION", VERSION, JOMBLO_VERSION
 ; defconst "R0", RZ, return_stack_top
 defconst "DOCOL", __DOCOL, DOCOL
-defconst "F_IMMED", __F_IMMED, F_IMMED
-defconst "F_HIDDEN", __F_HIDDEN, F_HIDDEN
+
+defconst "F_IMMED",   __F_IMMED,   F_IMMED
+defconst "F_HIDDEN",  __F_HIDDEN,  F_HIDDEN
 defconst "F_LENMASK", __F_LENMASK, F_LENMASK
 
 %macro defsys 2
@@ -438,13 +439,13 @@ defconst "F_LENMASK", __F_LENMASK, F_LENMASK
 	defconst name, SYS_%1, __NR_%2
 %endmacro
 
-; defsys EXIT, exit
-; defsys OPEN, open
+; defsys EXIT,  exit
+; defsys OPEN,  open
 ; defsys CLOSE, close
-; defsys READ, read
+; defsys READ,  read
 ; defsys WRITE, write
 ; defsys CREAT, creat
-; defsys BRK, brk
+; defsys BRK,   brk
 
 %macro defo 2
 	%defstr name O_%1
@@ -453,14 +454,14 @@ defconst "F_LENMASK", __F_LENMASK, F_LENMASK
 
 defo RDONLY, 0
 defo WRONLY, 1
-defo RDWR, 2
+defo RDWR,   2
 
 defo CREAT,    0o0100
 defo EXCL,     0o0200
 defo TRUNC,    0o1000
 defo APPEND,   0o2000
 defo NONBLOCK, 0o4000
-;; TODO: Investiate this magic number
+;; TODO: Investigate this magic number
 
 ;;;; RETURN STACK
 
