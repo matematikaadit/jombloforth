@@ -78,12 +78,12 @@ DOCOL:
 
 global _start
 _start:
-	cld                      ; Clear direction flag
-	; mov var_S0, rsp           ; Save the initial data stack pointer in FORTH variable S0
-	; mov rbp, return_stack_top ; Initialize the return stack
+	cld                       ; Clear direction flag
+	mov [var_S0], rsp         ; Save the initial data stack pointer in FORTH variable S0
+	mov rbp, return_stack_top ; Initialize the return stack
 	; call set_up_data_segment
-	; mov rsi, cold_start
-	; NEXT
+	mov rsi, cold_start
+	NEXT
 	mov rax, 60                ; exit (for now)
 	mov rdi, 0
 	syscall
@@ -403,8 +403,8 @@ defcode "CMOVE", CMOVE
 ;;;; BUILT-IN VARIABLE
 
 %macro defvar 2-4 0, 0
-       defcode %1, %2, %4
-		push var_%2
+	defcode %1, %2, %4
+		push qword [var_%2]
 		NEXT
 
 	;; data storage
@@ -417,7 +417,7 @@ defcode "CMOVE", CMOVE
 defvar "STATE", STATE
 defvar "HERE", HERE
 ; defvar "LATEST", LATEST, name_SYSCALL0 ; uncomment after defining SYSCALL0
-defvar "S0", SZ
+defvar "S0", S0
 defvar "BASE", BASE, 10
 
 %macro defconst 3-4 0
@@ -427,7 +427,7 @@ defvar "BASE", BASE, 10
 %endmacro
 
 defconst "VERSION", VERSION, JOMBLO_VERSION
-; defconst "R0", RZ, return_stack_top
+defconst "R0", R0, return_stack_top
 defconst "DOCOL", __DOCOL, DOCOL
 
 defconst "F_IMMED",   __F_IMMED,   F_IMMED
@@ -439,13 +439,19 @@ defconst "F_LENMASK", __F_LENMASK, F_LENMASK
 	defconst name, SYS_%1, __NR_%2
 %endmacro
 
-; defsys EXIT,  exit
-; defsys OPEN,  open
-; defsys CLOSE, close
-; defsys READ,  read
-; defsys WRITE, write
-; defsys CREAT, creat
-; defsys BRK,   brk
+;; syscall number
+;;
+;;    sed 's/#/%/;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
+;;
+%include "unistd_64.inc"
+
+defsys EXIT,  exit
+defsys OPEN,  open
+defsys CLOSE, close
+defsys READ,  read
+defsys WRITE, write
+defsys CREAT, creat
+defsys BRK,   brk
 
 %macro defo 2
 	%defstr name O_%1
@@ -499,3 +505,26 @@ defcode "DSP!", DSPSTORE
 	pop rsp
 	NEXT
 
+;;;; Data Segment
+%define INITIAL_DATA_SEGMENT_SIZE 65535
+
+section .text
+set_up_data_segment:
+	xor rbx, rbx
+	mov rax, __NR_brk
+	syscall
+
+;;;; buffers allocation
+
+%define RETURN_STACK_SIZE 8192
+%define BUFFER_SIZE 4096
+
+section .bss
+align 4096
+return_stack:
+	resb RETURN_STACK_SIZE
+return_stack_top:
+
+align 4096
+buffer:
+	resb BUFFER_SIZE
