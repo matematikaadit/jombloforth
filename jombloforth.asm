@@ -514,7 +514,7 @@ set_up_data_segment:
 	xor rdi, rdi
 	mov rax, __NR_brk ; brk(0)
 	syscall
-	mov rax, var_HERE
+	mov var_HERE, rax
 	add rax, INITIAL_DATA_SEGMENT_SIZE
 	mov rbx, rax
 	mov rax, __NR_brk
