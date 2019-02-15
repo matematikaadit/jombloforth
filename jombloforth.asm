@@ -96,9 +96,9 @@ cold_start:
 section .rodata
 
 ;; Various flags for the dictionary word header
-F_IMMED: db 0x80
-F_HIDDEN: db 0x20
-F_LENMASK: db 0x1f
+%define F_IMMED 0x80
+%define F_HIDDEN 0x20
+%define F_LENMASK 0x1f
 
 ;; Holds previously defined word
 ;; Starts as null/zero
@@ -108,7 +108,7 @@ F_LENMASK: db 0x1f
 ;;
 ;;     defword name, label, flag
 ;;
-%macro defword 3
+%macro defword 2-3 0
 	%strlen name_len %1
 
 	;; dictionary word header
@@ -131,16 +131,12 @@ F_LENMASK: db 0x1f
 		dq DOCOL
 %endmacro
 
-;; If flag not supplied, it defaults to 0
-%macro defword 2
-	defword %1, %2, 0
-%endmacro
 
 ;; Macro for defining native word
 ;;
 ;;     defcode name, label, flag
 ;;
-%macro defcode 3
+%macro defcode 2-3 0
 	%strlen name_len %1
 
 	;; dictionary word header
@@ -166,11 +162,6 @@ F_LENMASK: db 0x1f
 	align 16
 	global code_%2
 	code_%2:
-%endmacro
-
-;; If flags not supplied, it default to 0
-%macro defcode 2
-       defcode %1, %2, 0
 %endmacro
 
 defcode "DROP", DROP
@@ -283,3 +274,161 @@ defcode "/MOD", DIVMOD
 	push rdx
 	push rax
 	NEXT
+
+;;;; Comparison Words
+
+%macro defcmp 3
+	defcode %1, %2
+		pop rax
+		pop rbx
+		cmp rbx, rax
+		set%-3 al
+		movzx rax, al
+		push rax
+		NEXT
+%endmacro
+
+defcmp "=", EQU, e
+defcmp "<>", NEQ, ne
+defcmp "<", LT, l
+defcmp ">", GT, g
+defcmp "<=", LE, le
+defcmp ">=", GE, ge
+
+%macro deftest 3
+	defcode %1, %2
+		pop rax
+		test rax, rax
+		set%-3 al
+		movzx rax, al
+		push rax
+		NEXT
+%endmacro
+
+deftest "0=", ZEQU, z
+deftest "0<>", ZNEQU, nz
+deftest "0<", ZLT, l
+deftest "0>", ZGT, g
+deftest "0<=", ZLE, le
+deftest "0>=", ZGE, ge
+
+defcode "AND", AND
+	pop rax
+	and [rsp], rax
+	NEXT
+
+defcode "OR", OR
+	pop rax
+	or [rsp], rax
+	NEXT
+
+defcode "XOR", XOR
+	pop rax
+	xor [rsp], rax
+	NEXT
+
+defcode "INVERT", INVERT
+	not qword [rsp]
+	NEXT
+
+;;;; Exiting a Word
+
+defcode "EXIT", EXIT
+	POPRSP rsi
+	NEXT
+
+;; Literal
+
+defcode "LIT", LIT
+	lodsq
+	push rax
+	NEXT
+
+;;;; MEMORY
+
+defcode "!", STORE
+	pop rbx
+	pop rax
+	mov [rbx], rax
+	NEXT
+
+defcode "@", FETCH
+	pop rbx
+	mov rax, [rbx]
+	push rax
+	NEXT
+
+defcode "+!", ADDSTORE
+	pop rbx
+	pop rax
+	add [rbx], rax
+	NEXT
+
+defcode "-!", SUBSTORE
+	pop rbx
+	pop rax
+	sub [rbx], rax
+	NEXT
+
+defcode "C!", STOREBYTE
+	pop rbx
+	pop rax
+	mov [rbx], al
+	NEXT
+
+defcode "C@", FETCHBYTE
+	pop rbx
+	xor rax, rax
+	mov al, [rbx]
+	NEXT
+
+defcode "C@C!", CCOPY
+	mov rbx, [rsp+4]
+	mov al, [rbx]
+	pop rdi
+	stosb
+	push rdi
+	inc qword [rsp+4]
+	NEXT
+
+defcode "CMOVE", CMOVE
+	mov rdx, rsi
+	pop rcx
+	pop rdi
+	pop rsi
+	rep movsb
+	mov rsi, rdx
+	NEXT
+
+;;;; BUILT-IN VARIABLE
+
+%macro defvar 2-4 0, 0
+       defcode %1, %2, %4
+		push var_%2
+		NEXT
+
+	;; data storage
+	section .data
+	align 8, db 0
+	var_%2:
+		db %3
+%endmacro
+
+defvar "STATE", STATE
+defvar "HERE", HERE
+; defvar "LATEST", LATEST, name_SYSCALL0 ; uncomment after defining SYSCALL0
+defvar "S0", SZ
+defvar "BASE", BASE, 10
+
+%macro defconst 3-4 0
+	defcode %1, %2, %4
+		push %3
+		NEXT
+%endmacro
+
+defconst "VERSION", VERSION, JOMBLO_VERSION
+; defconst "R0", return_stack_top
+defconst "DOCOL", __DOCOL, DOCOL
+defconst "F_IMMED", __F_IMMED, F_IMMED
+defconst "F_HIDDEN", __F_HIDDEN, F_HIDDEN
+defconst "F_LENMASK", __F_LENMASK, F_LENMASK
