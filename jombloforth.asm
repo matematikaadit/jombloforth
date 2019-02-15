@@ -427,8 +427,74 @@ defvar "BASE", BASE, 10
 %endmacro
 
 defconst "VERSION", VERSION, JOMBLO_VERSION
-; defconst "R0", return_stack_top
+; defconst "R0", RZ, return_stack_top
 defconst "DOCOL", __DOCOL, DOCOL
 defconst "F_IMMED", __F_IMMED, F_IMMED
 defconst "F_HIDDEN", __F_HIDDEN, F_HIDDEN
 defconst "F_LENMASK", __F_LENMASK, F_LENMASK
+
+%macro defsys 2
+	%defstr name SYS_%1
+	defconst name, SYS_%1, __NR_%2
+%endmacro
+
+; defsys EXIT, exit
+; defsys OPEN, open
+; defsys CLOSE, close
+; defsys READ, read
+; defsys WRITE, write
+; defsys CREAT, creat
+; defsys BRK, brk
+
+%macro defo 2
+	%defstr name O_%1
+	defconst name, __O_%1, %2
+%endmacro
+
+defo RDONLY, 0
+defo WRONLY, 1
+defo RDWR, 2
+
+defo CREAT,    0o0100
+defo EXCL,     0o0200
+defo TRUNC,    0o1000
+defo APPEND,   0o2000
+defo NONBLOCK, 0o4000
+;; TODO: Investiate this magic number
+
+;;;; RETURN STACK
+
+defcode ">R", TOR
+	pop rax
+	PUSHRSP rax
+	NEXT
+
+defcode "R>", FROMR
+	POPRSP rax
+	push rax
+	NEXT
+
+defcode "RSP@", RSPFETCH
+	push rbp
+	NEXT
+
+defcode "RSP!", RSPSTORE
+	pop rbp
+	NEXT
+
+defcode "RDROP", RDROP
+	add rbp, 4
+	NEXT
+
+
+;;;; PARAMETER (DATA) STACK
+
+defcode "DSP@", DSPFETCH
+	mov rax, rsp
+	push rax
+	NEXT
+
+defcode "DSP!", DSPSTORE
+	pop rsp
+	NEXT
+
