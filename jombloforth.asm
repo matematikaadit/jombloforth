@@ -41,7 +41,8 @@
 
 ;; syscall number
 ;;
-;;    sed 's_#_%_;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
+;;    sed 's_#_%_;s_/\*_;_;s_ \*/__' \
+;;    /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
 ;;
 %include "unistd_64.inc"
 
@@ -55,7 +56,8 @@
 ;; ----------------
 
 ;; The version of this program, not to be mistaken as how many years the
-;; author has been single. Please increment this number each time one year passed.
+;; author has been single. Please increment this number each time one year
+;; passed.
 %assign JOMBLO_VERSION 1
 ;; (that's a joke, btw)
 
@@ -89,7 +91,8 @@ DOCOL:
 global _start
 _start:
 	cld                       ; Clear direction flag
-	mov [var_S0], rsp         ; Save the initial data stack pointer in FORTH variable S0
+	; Save the initial data stack pointer in variable S0
+	mov [var_S0], rsp
 	mov rbp, return_stack_top ; Initialize the return stack
 	call set_up_data_segment
 	mov rsi, cold_start
@@ -104,8 +107,8 @@ cold_start:
 	db 0
 
 ;; Various flags for the dictionary word header
-%define F_IMMED 0x80
-%define F_HIDDEN 0x20
+%define F_IMMED   0x80
+%define F_HIDDEN  0x20
 %define F_LENMASK 0x1f
 
 ;; Holds previously defined word
@@ -557,7 +560,7 @@ _EMIT:
 	mov [emit_scratch], al ; save the byte to scratch buffer
 	push rsi               ; save rsi temporarily
 	mov rsi, emit_scratch
-	mov rdx, 1             ; how many bytes to read max
+	mov rdx, 1             ; how many bytes to write
 	mov rax, __NR_write    ; write(1, scratch, 1)
 	syscall
 	pop rsi                ; restore it
