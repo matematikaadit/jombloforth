@@ -38,7 +38,11 @@
 ;;
 ;; For more information, please refer to <http://unlicense.org>
 
-;; see defining constant section
+
+;; syscall number
+;;
+;;    sed 's_#_%_;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
+;;
 %include "unistd_64.inc"
 
 ;; see buffer allocation
@@ -157,8 +161,8 @@ cold_start:
 
 	;; word definition, link to the native code
 	align 8, db 0
-	global %2
-	%2:
+	global $%2             ; fix error for `WORD` which isn't valid label
+	$%2:
 		dq code_%2
 
 	;; native code
@@ -443,12 +447,6 @@ defconst "F_LENMASK", __F_LENMASK, F_LENMASK
 	defconst name, SYS_%1, __NR_%2
 %endmacro
 
-;; syscall number
-;;
-;;    sed 's_#_%_;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
-;;
-;; see %include "unistd_64.inc" above
-
 defsys EXIT,  exit
 defsys OPEN,  open
 defsys CLOSE, close
@@ -519,23 +517,23 @@ _KEY:
 	jge .full
 	xor rax, rax
 	mov al, [rbx]
-	inc rbx               ; QUESTION: inc? not add rbx, 4?
+	inc rbx
 	mov [currkey], rbx
 	ret
 
 .full:
-	xor rdi, rdi
+	xor rdi, rdi          ; stdin (0)
 	push rsi              ; save rsi temporarily
-	mov rsi, [buffer]
+	mov rsi, buffer       ; pointer to the buffer
 	mov [currkey], rsi
-	mov rdx, BUFFER_SIZE
-	mov rax, __NR_read
+	mov rdx, BUFFER_SIZE  ; how many bytes to read max
+	mov rax, __NR_read    ; read(0, buffer, size)
 	syscall
 	test rax, rax
 	jbe .eof
 	add rsi, rax
 	mov [bufftop], rsi
-	pop rsi                ; restore it
+	pop rsi               ; restore it
 	jmp _KEY
 
 .eof:
@@ -555,18 +553,53 @@ defcode "EMIT", EMIT
 	call _EMIT
 	NEXT
 _EMIT:
-	mov rdi, 1
-	mov [emit_scratch], al
-	push rsi
+	mov rdi, 1             ; stdout (1)
+	mov [emit_scratch], al ; save the byte to scratch buffer
+	push rsi               ; save rsi temporarily
 	mov rsi, emit_scratch
-	mov rdx, 1
-	mov rax, __NR_write
+	mov rdx, 1             ; how many bytes to read max
+	mov rax, __NR_write    ; write(1, scratch, 1)
 	syscall
-	pop rsi
+	pop rsi                ; restore it
 	ret
 
 section .data
 emit_scratch: db 0
+
+defcode "WORD", WORD
+	call _WORD
+	push rdi
+	push rcx
+	NEXT
+
+_WORD:
+.ws:
+	call _KEY
+	cmp al, '\'
+	je .comment
+	cmp al, ' '
+	jbe .ws
+
+	mov rdi, word_buffer
+.word:
+	stosb
+	call _KEY
+	cmp al, ' '
+	ja .word
+
+	sub rdi, word_buffer
+	mov rcx, rdi
+	mov rdi, word_buffer
+	ret
+
+.comment:
+	call _KEY
+	cmp al, 0x0A
+	jne .comment
+	jmp .ws
+
+section .data
+word_buffer: times 32 db 0
 
 ;;;; Data Segment
 %define INITIAL_DATA_SEGMENT_SIZE 65536
