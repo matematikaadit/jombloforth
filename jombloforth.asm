@@ -95,7 +95,7 @@ _start:
 	mov [var_S0], rsp
 	mov rbp, return_stack_top ; Initialize the return stack
 	call set_up_data_segment
-	mov rsi, [cold_start]
+	mov rsi, cold_start
 	NEXT
 
 section .rodata
