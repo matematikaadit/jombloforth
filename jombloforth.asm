@@ -390,12 +390,12 @@ defcode "C@", FETCHBYTE
 	NEXT
 
 defcode "C@C!", CCOPY
-	mov rbx, [rsp+4]
+	mov rbx, [rsp+8]
 	mov al, [rbx]
 	pop rdi
 	stosb
 	push rdi
-	inc qword [rsp+4]
+	inc qword [rsp+8]
 	NEXT
 
 defcode "CMOVE", CMOVE
@@ -489,7 +489,7 @@ defcode "RSP!", RSPSTORE
 	NEXT
 
 defcode "RDROP", RDROP
-	add rbp, 4
+	add rbp, 8
 	NEXT
 
 
@@ -694,7 +694,7 @@ _FIND:
 	; Compare the strings in detail.
 	push rcx         ; Save the length
 	push rdi         ; Save the address (repe cmpsb will move this pointer)
-	lea rsi, [rdx+5] ; Dictionary string we are checking against.
+	lea rsi, [rdx+9] ; Dictionary string we are checking against.
 	repe cmpsb       ; Compare the strings.
 	pop rdi
 	pop rcx
