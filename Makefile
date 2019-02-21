@@ -15,4 +15,10 @@ dumpall: jombloforth
 clean:
 	rm jombloforth.o jombloforth
 
+test/%: test/%.o
+	gcc -o $@ $<
+
+test/%.o: test/%.asm
+	nasm -g -F dwarf -f elf64 -o $@ $<
+
 .PHONY: all dump dumpall clean
