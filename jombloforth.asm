@@ -826,6 +826,48 @@ defcode "'", TICK
 	push rax
 	NEXT
 
+;;;; Branching
+
+defcode "BRANCH", BRANCH
+	add rsi, [rsi]
+	NEXT
+
+defcode "0BRANCH", ZBRANCH
+	pop rax
+	test rax, rax
+	jz code_BRANCH
+	lodsq
+	NEXT
+
+;;;; Literal String
+
+defcode "LITSTRING", LITSTRING
+	lodsq
+	push rsi
+	push rax
+	add rsi, rax
+	add rsi, 0b111
+	and rsi, ~0b111
+	NEXT
+
+defcode "TELL", TELL
+	mov rcx, rsi        ; save temporarily
+	mov rdi, 1          ; 1st param = stdout(1)
+	pop rdx             ; 3nd param = length of string
+	pop rsi             ; 2nd param = the string
+	mov rax, __NR_write
+	push rcx            ; save previous value of rsi in the stack
+	syscall
+	pop rsi             ; restore rsi
+	NEXT
+
+;;;; Quit and Interpret
+
+defword "QUIT", QUIT
+	dq RZ, RSPSTORE
+	dq INTERPRET
+	dq BRANCH, -16
+
 ; QUICKFIX to make name_SYSCALL0 points to something on the definition of LATEST
 defcode "SYSCALL0", SYSCALL0
 	pop rax   ; System call number (see <asm/unistd.h>)
