@@ -129,7 +129,7 @@ cold_start:
 	global name_%2
 	name_%2:
 		dq link
-		db name_len + %4
+		db name_len + %3
 		db %1
 
 	;; update link to point to this word's header
@@ -170,7 +170,7 @@ cold_start:
 
 	;; native code
 	section .text
-	align 16
+	align 8
 	global code_%2
 	code_%2:
 %endmacro
@@ -717,6 +717,56 @@ _FIND:
 	pop rsi
 	xor rax,rax ; Return zero to indicate not found.
 	ret
+
+defcode ">CFA", TCFA
+	pop rdi
+	call _TCFA
+	push rdi
+	NEXT
+
+_TCFA:
+	xor rax, rax
+	add rdi, 8        ; skip link pointer
+	mov al, [rdi]     ; load flags+len into al
+	inc rdi           ; skip flags+len byte
+	and al, F_LENMASK ; just the length, not the flags
+	add rdi, rax      ; skip the name
+	add rdi, 0b111    ; the codeword is 8-byte aligned
+	and rdi, ~0b111
+	ret
+
+defword ">DFA", TDFA
+	dq TCFA
+	dq INCR8
+	dq EXIT
+
+;;;; Compiling
+
+defcode "CREATE", CREATE
+	; Get the name length and address.
+	pop rcx                 ; rcx = length
+	pop rbx                 ; rbx = address of name
+
+	; Link pointer.
+	mov rdi, [var_HERE]     ; rdi is the address of the header
+	mov rax, [var_LATEST]   ; Get link pointer
+	stosq                   ; and store it in the header.
+
+	; Length byte and the word itself.
+	mov al, cl              ; Get the length.
+	stosb                   ; Store the length/flags byte.
+	push rsi
+	mov rsi, rbx            ; rsi = word
+	rep movsb               ; Copy the word
+	pop rsi
+	add rdi, 0b111          ; Align to next 8 byte boundary.
+	and rdi, ~0b111
+
+	; Update LATEST and HERE.
+	mov rax, [var_HERE]
+	mov [var_LATEST], rax
+	mov [var_HERE], rdi
+	NEXT
 
 
 ; QUICKFIX to make name_SYSCALL0 points to something on the definition of LATEST
