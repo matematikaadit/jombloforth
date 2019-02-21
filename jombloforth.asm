@@ -427,7 +427,7 @@ defcode "CMOVE", CMOVE
 
 defvar "STATE", STATE
 defvar "HERE", HERE
-; defvar "LATEST", LATEST, name_SYSCALL0 ; uncomment after defining SYSCALL0
+defvar "LATEST", LATEST, name_SYSCALL0
 defvar "S0", S0
 defvar "BASE", BASE, 10
 
@@ -603,6 +603,128 @@ _WORD:
 
 section .data
 word_buffer: times 32 db 0
+
+defcode "NUMBER", NUMBER
+	pop rcx
+	pop rdi
+	call _NUMBER
+	push rax
+	push rcx
+	NEXT
+
+_NUMBER:
+	xor rax, rax
+	xor rbx, rbx
+
+	test rcx, rcx ; trying to parse zero-length string is an error, but will return 0.
+	jz .ret
+
+	mov rdx, [var_BASE] ; get BASE (in dl)
+	mov bl, [rdi]       ; bl = first character in string
+	inc rdi
+	push rax            ; push 0 on stack
+	cmp bl, '-'         ; negative number?
+	jnz .convert
+	pop rax
+	push rbx            ; push <> 0 on stack, indicating negative
+	dec rcx
+	jnz .loop
+	pop rbx
+	mov rcx, 1
+	ret
+
+	; Loop reading digits.
+.loop:
+	imul rax, rdx       ; rax *= BASE
+	mov bl, [rdi]       ; bl = next character in string
+	inc rdi
+
+.convert:
+	sub bl, '0'         ; < '0'?
+	jb .finish
+	cmp bl, 10          ; <= '9'?
+	jb .numeric
+	sub bl, 17          ; < 'A'? (17 is 'A'-'0')
+	jb .finish
+	add bl, 10
+
+.numeric:
+	cmp bl, dl          ; >= BASE?
+	jge .finish
+
+	; OK, so add it to rax and loop
+	add rax, rbx
+	dec rcx
+	jnz .loop
+
+	; Negate the result if the first character was '-' (saved on the stack)
+.finish:
+	pop rbx
+	test rbx, rbx
+	jz .ret
+	neg rax
+
+.ret:
+	ret
+
+
+;;;; Dictionary Looks Ups
+
+defcode "FIND", FIND
+	pop rcx
+	pop rdi
+	call _FIND
+	push rax
+	NEXT
+
+_FIND:
+	push rsi              ; save rsi so that we can use it in string comparison
+
+	; now we start searching the dictionary for this word
+	mov rdx, [var_LATEST] ; LATEST points to name header of the latest word in the dictionary
+.loop:
+	test rdx, rdx         ; NULL pointer?
+	je .notfound
+
+	; Compare the length expected and the length of the word.
+	; Note that if the F_HIDDEN flag is set on the word, then by a bit of trickery
+	; this won't pick the word (the length will appear to be wrong).
+	xor rax,rax
+	mov al, [rdx+8]              ; al = flags+length field
+	and al, F_HIDDEN | F_LENMASK ; al = name length
+	cmp al, cl                   ; Length is the same?
+	jne .next
+
+	; Compare the strings in detail.
+	push rcx         ; Save the length
+	push rdi         ; Save the address (repe cmpsb will move this pointer)
+	lea rsi, [rdx+5] ; Dictionary string we are checking against.
+	repe cmpsb       ; Compare the strings.
+	pop rdi
+	pop rcx
+	jne .next        ; Not the same.
+
+	; The strings are the same - return the header pointer in rax
+	pop rsi
+	mov rax, rdx
+	ret
+
+.next:
+	mov rdx, [rdx] ; Move back through the link field to the previous word
+	jmp .loop      ; .. and loop.
+
+.notfound:
+	pop rsi
+	xor rax,rax ; Return zero to indicate not found.
+	ret
+
+
+; QUICKFIX to make name_SYSCALL0 points to something on the definition of LATEST
+defcode "SYSCALL0", SYSCALL0
+	pop rax   ; System call number (see <asm/unistd.h>)
+	syscall
+	push rax  ; Result (negative for -errno)
+	NEXT
 
 ;;;; Data Segment
 %define INITIAL_DATA_SEGMENT_SIZE 65536
