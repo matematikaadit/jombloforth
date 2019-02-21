@@ -95,16 +95,12 @@ _start:
 	mov [var_S0], rsp
 	mov rbp, return_stack_top ; Initialize the return stack
 	call set_up_data_segment
-	mov rsi, cold_start
+	mov rsi, [cold_start]
 	NEXT
-	xor rdi, rdi
-	mov rax, __NR_exit        ; exit (for now)
-	syscall
 
 section .rodata
 cold_start:
-	; QUIT
-	db 0
+	dq QUIT
 
 ;; Various flags for the dictionary word header
 %define F_IMMED   0x80
@@ -864,11 +860,114 @@ defcode "TELL", TELL
 ;;;; Quit and Interpret
 
 defword "QUIT", QUIT
-	dq RZ, RSPSTORE
+	dq R0, RSPSTORE
 	dq INTERPRET
 	dq BRANCH, -16
 
-; QUICKFIX to make name_SYSCALL0 points to something on the definition of LATEST
+defcode "INTERPRET", INTERPRET
+	call _WORD		    ; return rcx = length, rdi = pointer to word
+
+	; Is it in the dictionary?
+	xor rax, rax
+	mov [interpret_is_lit], rax ; Not a literal number (not yet anyway ...)
+	call _FIND                  ; Return rax = pointer to header or 0 if not found
+	test rax, rax               ; Found?
+	jz .number
+
+	; In the dictionary. Is it an IMMEDIATE codeword?
+	mov rdi, rax                ; rdi = dictionary entry
+	mov al, [rdi+8]             ; Get name+flags.
+	push ax                     ; Just save it for now
+	call _TCFA                  ; Convert dictionary entry in rdi to codeword pointer
+	pop ax
+	and al, F_IMMED             ; Is IMMED flag set?
+	mov rax, rdi
+	jnz .exec                   ; If IMMED, jump straight to executing
+
+	jmp .main
+
+	; Not in the dictionary (not a word) so assume it's a literal number.
+.number:
+	inc qword [interpret_is_lit]
+	call _NUMBER		; Returns the parsed number in rax, rcx > 0 if error
+	test rcx, rcx
+	jnz .numerror
+	mov rbx, rax
+	mov rax, LIT		; The word is LIT
+
+	; Are we compiling or executing?
+.main:
+	mov rdx, [var_STATE]
+	test rdx, rdx
+	jz .exec			; Jump if executing.
+
+	; Compiling - just append the word to the current dictionary definition.
+	call _COMMA
+	mov rcx, [interpret_is_lit] ; Was it a literal?
+	test rcx, rcx
+	jz .next
+	mov rax, rbx			; Yes, so LIT is followed by a number.
+	call _COMMA
+.next:
+	NEXT
+
+	; Executing - run it!
+.exec:
+	mov rcx, [interpret_is_lit] ; Literal?
+	test rcx, rcx		    ; Literal?
+	jnz .litexec
+
+	; Not a literal, execute it now.  This never returns, but the codeword will
+	; eventually call NEXT which will reenter the loop in QUIT.
+	jmp [rax]
+
+	; Executing a literal, which means push it on the stack.
+.litexec:
+	push rbx
+	NEXT
+
+	; Parse error (not a known word or a number in the current BASE).
+.numerror:
+	; Print an error message followed by up to 40 characters of context.
+	push rsi
+
+	mov rdi, 2		; 1st param: stderr(2)
+	mov rsi, errmsg		; 2nd param: error message
+	mov rdx, errmsglen	; 3rd param: length of string
+	mov rax, __NR_write	; write syscall
+	syscall
+
+	mov rsi, [currkey]	; the error occurred just before currkey position
+	mov rdx, rsi
+	sub rdx, buffer		; rdx = currkey - buffer (length in buffer before currkey)
+	cmp rdx, 40		; if > 40, then print only 40 characters
+	jle .le
+	mov rdx, 40
+.le:
+	sub rsi, rdx		; rcx = start of area to print, rdx = length
+	mov rax, __NR_write	; write syscall
+	syscall
+
+	mov rsi, errmsgnl	; newline
+	mov rdx, 1
+	mov rax, __NR_write	; write syscall
+	syscall
+	pop rsi
+
+	NEXT
+
+section .rodata
+errmsg: db "PARSE ERROR: "
+errmsglen: equ $ - errmsg
+errmsgnl: db 0x0A
+
+section .data			; NB: easier to fit in the .data section
+align 8
+interpret_is_lit:
+	dq 0			; Flag used to record if reading a literal
+
+;;;; Odds and Ends
+
 defcode "CHAR", CHAR
         call _WORD              ; Returns rcx = length, rdi = pointer to word.
         xor rax, rax
