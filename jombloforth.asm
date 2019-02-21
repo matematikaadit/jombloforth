@@ -768,6 +768,63 @@ defcode "CREATE", CREATE
 	mov [var_HERE], rdi
 	NEXT
 
+defcode ",", COMMA
+	pop rax
+	call _COMMA
+	NEXT
+
+_COMMA:
+	mov rdi, [var_HERE]    ; HERE
+	stosq                   ; Store it.
+	mov [var_HERE], rdi     ; Update HERE (incremented)
+	ret
+
+defcode "[", LBRAC, F_IMMED
+	xor rax, rax
+	mov [var_STATE], rax
+	NEXT
+
+defcode "]", RBRAC
+	mov qword [var_STATE], 1
+	NEXT
+
+defword ":", COLON
+	dq $WORD
+	dq CREATE
+	dq LIT, DOCOL, COMMA
+	dq LATEST, FETCH, HIDDEN
+	dq RBRAC
+	dq EXIT
+
+defword ";", SEMICOLON, F_IMMED
+	dq LIT, EXIT, COMMA
+	dq LATEST, FETCH, HIDDEN
+	dq LBRAC
+	dq EXIT
+
+
+defcode "IMMEDIATE", IMMEDATE, F_IMMED
+	mov rdi, [var_LATEST]
+	add rdi, 8
+	xor byte [rdi], F_IMMED
+	NEXT
+
+defcode "HIDDEN", HIDDEN
+	pop rdi
+	add rdi, 8
+	xor byte [rdi], F_HIDDEN
+	NEXT
+
+defword "HIDE", HIDE
+	dq $WORD
+	dq FIND
+	dq HIDDEN
+	dq EXIT
+
+defcode "'", TICK
+	lodsq
+	push rax
+	NEXT
 
 ; QUICKFIX to make name_SYSCALL0 points to something on the definition of LATEST
 defcode "SYSCALL0", SYSCALL0
