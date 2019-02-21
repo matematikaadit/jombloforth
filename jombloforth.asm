@@ -869,11 +869,54 @@ defword "QUIT", QUIT
 	dq BRANCH, -16
 
 ; QUICKFIX to make name_SYSCALL0 points to something on the definition of LATEST
+defcode "CHAR", CHAR
+        call _WORD              ; Returns rcx = length, rdi = pointer to word.
+        xor rax, rax
+        mov al, [rdi]           ; Get the first character of the word.
+        push rax                ; Push it onto the stack.
+        NEXT
+
+defcode "EXECUTE", EXECUTE
+        pop rax                 ; Get xt into rax
+        jmp [rax]               ; and jump to it.
+                                ; After xt runs its NEXT will continue executing the current word.
+
+defcode "SYSCALL3", SYSCALL3
+        mov rcx, rsi            ; Save rsi
+        pop rax                 ; System call number (see <asm/unistd.h>)
+        pop rdi                 ; First parameter.
+        pop rsi                 ; Second parameter
+        pop rdx                 ; Third parameter
+        push rcx                ; Save previous value of rsi on stack
+        syscall
+        pop rsi                 ; restore
+        push rax                ; Result (negative for -errno)
+        NEXT
+
+defcode "SYSCALL2", SYSCALL2
+        mov rcx, rsi
+        pop rax                 ; System call number (see <asm/unistd.h>)
+        pop rdi                 ; First parameter.
+        pop rsi                 ; Second parameter
+        push rcx
+        syscall
+        pop rsi
+        push rax                ; Result (negative for -errno)
+        NEXT
+
+defcode "SYSCALL1", SYSCALL1
+        pop rax                 ; System call number (see <asm/unistd.h>)
+        pop rdi                 ; First parameter.
+        syscall
+        push rax                ; Result (negative for -errno)
+        NEXT
+
 defcode "SYSCALL0", SYSCALL0
-	pop rax   ; System call number (see <asm/unistd.h>)
-	syscall
-	push rax  ; Result (negative for -errno)
-	NEXT
+        pop rax                 ; System call number (see <asm/unistd.h>)
+        syscall
+        push rax                ; Result (negative for -errno)
+        NEXT
+
 
 ;;;; Data Segment
 %define INITIAL_DATA_SEGMENT_SIZE 65536
