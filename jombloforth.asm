@@ -39,10 +39,9 @@
 ;; For more information, please refer to <http://unlicense.org>
 
 
-;; syscall number
+;; syscall number, generated using this command:
 ;;
-;;    sed 's_#_%_;s_/\*_;_;s_ \*/__' \
-;;    /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
+;;    sed 's_#_%_;s_/\*_;_;s_ \*/__' /usr/include/x86_64-linux-gnu/asm/unistd_64.h > unistd_64.inc
 ;;
 %include "unistd_64.inc"
 
