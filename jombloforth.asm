@@ -1027,7 +1027,7 @@ set_up_data_segment:
         syscall
         mov [var_HERE], rax
         add rax, INITIAL_DATA_SEGMENT_SIZE
-        mov rbx, rax
+        mov rdi, rax
         mov rax, __NR_brk
         syscall
         ret
