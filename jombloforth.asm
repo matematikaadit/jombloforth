@@ -410,7 +410,7 @@ defcode "CMOVE", CMOVE
 
 %macro defvar 2-4 0, 0
         defcode %1, %2, %4
-                push qword [var_%2]
+                push var_%2
                 NEXT
 
         ;; data storage
