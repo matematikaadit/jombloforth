@@ -70,7 +70,7 @@
 
 %macro PUSHRSP 1
         lea rbp, [rbp-8]
-        mov rbp, %1
+        mov [rbp], %1
 %endmacro
 
 %macro POPRSP 1
@@ -855,6 +855,14 @@ defcode "TELL", TELL
         syscall
         pop rsi             ; restore rsi
         NEXT
+
+;;;; Part of Testing
+
+defword "FORTYTWO", FORTYTWO
+	dq DOCOL
+	dq LIT
+	dq 42
+	dq EXIT
 
 ;;;; Quit and Interpret
 
