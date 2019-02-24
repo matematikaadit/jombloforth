@@ -1,4 +1,4 @@
-all: jombloforth
+all: jombloforth jombloforth.lst
 
 jombloforth.o: jombloforth.asm unistd_64.inc
 	nasm -g -F dwarf -f elf64 -o jombloforth.o jombloforth.asm
@@ -12,9 +12,6 @@ dump: jombloforth
 dumpall: jombloforth
 	objdump -z -D -M intel jombloforth
 
-clean:
-	rm jombloforth.o jombloforth
-
 jombloforth.lst: jombloforth.asm
 	nasm -E jombloforth.asm -o jombloforth.lst
 
@@ -24,4 +21,13 @@ test/%: test/%.o
 test/%.o: test/%.asm
 	nasm -g -F dwarf -f elf64 -o $@ $<
 
-.PHONY: all dump dumpall clean
+run: jombloforth
+	cat jombloforth.f - | ./jombloforth
+
+runcheck: jombloforth
+	./jombloforth < jombloforth.f
+
+clean:
+	rm jombloforth.o jombloforth
+
+.PHONY: all dump dumpall run runcheck clean
