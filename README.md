@@ -15,10 +15,6 @@ ld -o jombloforth jombloforth.o
 ./jombloforth
 ```
 
-## Known Issue
-
-Currently broken. It segfault whenever the interpreter enter the compile mode.
-
 ## License
 
 UNLICENSE
