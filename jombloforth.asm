@@ -859,7 +859,6 @@ defcode "TELL", TELL
 ;;;; Part of Testing
 
 defword "FORTYTWO", FORTYTWO
-	dq DOCOL
 	dq LIT
 	dq 42
 	dq EXIT
