@@ -15,6 +15,9 @@ dumpall: jombloforth
 clean:
 	rm jombloforth.o jombloforth
 
+jombloforth.lst: jombloforth.asm
+	nasm -E jombloforth.asm -o jombloforth.lst
+
 test/%: test/%.o
 	gcc -o $@ $<
 
