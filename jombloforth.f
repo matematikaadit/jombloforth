@@ -53,6 +53,8 @@
     ,
 ;
 
+\ Conditionals Statements
+
 : IF IMMEDIATE
     ' 0BRANCH ,
     HERE @
@@ -75,3 +77,41 @@
     SWAP !
 ;
 
+: UNLESS IMMEDIATE
+    ' NOT ,
+    [COMPILE] IF
+;
+
+\ Loop Construct
+
+
+: BEGIN IMMEDIATE
+    HERE @
+;
+
+: UNTIL IMMEDIATE
+    ' 0BRANCH ,
+    HERE @ -
+    ,
+;
+
+: AGAIN IMMEDIATE
+    ' BRANCH ,
+    HERE @
+    ,
+;
+
+: WHILE IMMEDIATE
+    ' 0BRANCH ,
+    HERE @
+    0 ,
+;
+
+: REPEAT IMMEDIATE
+    ' BRANCH ,
+    SWAP
+    HERE @ - ,
+    DUP
+    HERE @ SWAP -
+    SWAP !
+;
