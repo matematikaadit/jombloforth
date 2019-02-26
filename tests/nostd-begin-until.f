@@ -14,10 +14,11 @@
 \ print 9 down to 1
 : MAIN
     10
-    1-
-    DUP
-    0BRANCH
-    -16
+    BEGIN
+        1-
+        DUP
+        PUTS
+    DUP 0= UNTIL
     DROP
 ;
 
