@@ -288,7 +288,7 @@ defcode "/MOD", DIVMOD
                 pop rax
                 pop rbx
                 cmp rbx, rax
-                set%-3 al
+                set%+3 al
                 movzx rax, al
                 push rax
                 NEXT

@@ -1,0 +1,29 @@
+: CR 10 EMIT ;
+: PUTS 48 + EMIT CR ;
+
+1 2 <  PUTS
+1 2 <= PUTS
+1 2 =  PUTS
+1 2 >= PUTS
+1 2 >  PUTS
+CR
+1 2 <> PUTS
+CR
+CR
+2 2 <  PUTS
+2 2 <= PUTS
+2 2 =  PUTS
+2 2 >= PUTS
+2 2 >  PUTS
+CR
+2 2 <> PUTS
+CR
+CR
+3 2 <  PUTS
+3 2 <= PUTS
+3 2 =  PUTS
+3 2 >= PUTS
+3 2 >  PUTS
+CR
+3 2 <> PUTS
+
