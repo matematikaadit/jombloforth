@@ -1,0 +1,26 @@
+: CR 10 EMIT ;
+: PUTS 48 + EMIT CR ;
+
+-1 0= PUTS
+ 0 0= PUTS
+ 1 0= PUTS
+CR
+-1 0<> PUTS
+ 0 0<> PUTS
+ 1 0<> PUTS
+CR
+-1 0< PUTS
+ 0 0< PUTS
+ 1 0< PUTS
+CR
+-1 0> PUTS
+ 0 0> PUTS
+ 1 0> PUTS
+CR
+-1 0<= PUTS
+ 0 0<= PUTS
+ 1 0<= PUTS
+CR
+-1 0>= PUTS
+ 0 0>= PUTS
+ 1 0>= PUTS

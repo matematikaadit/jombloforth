@@ -305,7 +305,7 @@ defcmp ">=", GE,  ge
         defcode %1, %2
                 pop rax
                 test rax, rax
-                set%-3 al
+                set%+3 al
                 movzx rax, al
                 push rax
                 NEXT
