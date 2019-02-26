@@ -3,14 +3,14 @@
     EMIT
 ;
 
-: MAIN IMMEDIATE
-    ' STAR ,
+: [BACK] IMMEDIATE
     ' BRANCH ,
     -16 ,
 ;
 
-: foo
-  MAIN
+: MAIN
+    STAR
+    [BACK]
 ;
 
-foo
+MAIN
