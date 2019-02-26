@@ -24,10 +24,10 @@ test/%.o: test/%.asm
 run: jombloforth
 	cat jombloforth.f - | ./jombloforth
 
-runcheck: jombloforth
+check: jombloforth
 	./jombloforth < jombloforth.f
 
 clean:
 	rm jombloforth.o jombloforth
 
-.PHONY: all dump dumpall run runcheck clean
+.PHONY: all dump dumpall run check clean
