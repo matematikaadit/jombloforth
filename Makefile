@@ -6,6 +6,10 @@ jombloforth.o: jombloforth.asm unistd_64.inc
 jombloforth: jombloforth.o
 	ld -o jombloforth jombloforth.o
 
+slim: jombloforth.asm unistd_64.inc
+	nasm -f elf64 -o jombloforth.o jombloforth.asm
+	ld -o jombloforth jombloforth.o
+
 dump: jombloforth
 	objdump -z -j .rodata -j .data -j .text -d -M intel jombloforth
 
@@ -15,10 +19,10 @@ dumpall: jombloforth
 jombloforth.lst: jombloforth.asm
 	nasm -E jombloforth.asm -o jombloforth.lst
 
-test/%: test/%.o
+experiment/%: experiment/%.o
 	gcc -o $@ $<
 
-test/%.o: test/%.asm
+experiment/%.o: experiment/%.asm
 	nasm -g -F dwarf -f elf64 -o $@ $<
 
 run: jombloforth
@@ -30,4 +34,4 @@ check: jombloforth
 clean:
 	rm jombloforth.o jombloforth
 
-.PHONY: all dump dumpall run check clean
+.PHONY: all slim dump dumpall run check clean

@@ -158,3 +158,92 @@
 \ Standard word for manipulating BASE.
 : DECIMAL ( -- ) 10 BASE ! ;
 : HEX ( -- ) 16 BASE ! ;
+
+( Printing Numbers )
+
+: U. ( u -- )
+    BASE @ /MOD
+    ?DUP IF       ( if quotient <> 0 then )
+        RECURSE   ( print the quotient )
+    THEN
+
+    ( print the remainder )
+    DUP 10 < IF
+        '0'
+    ELSE
+        10 -
+	'A'
+    THEN
+    +
+    EMIT
+;
+
+( Printing the content of the stack )
+: .S ( -- )
+    DSP@
+    BEGIN
+        DUP S0 @ <
+    WHILE
+        DUP @ U.
+	SPACE
+	8+
+    REPEAT
+    DROP
+;
+
+( Returns the width of an unsigned number (in characters) in the current base )
+: UWIDTH
+    BASE @ /
+    ?DUP IF
+        RECURSE 1+
+    ELSE
+        1
+    THEN
+;
+
+: U.R ( u width -- )
+    SWAP
+    DUP
+    UWIDTH
+    ROT
+    SWAP -
+    SPACES
+    U.
+;
+
+: .R ( n width -- )
+    SWAP ( width n )
+    DUP 0< IF
+        NEGATE ( width u )
+	1      ( save flag to remember that it was negative | width u 1 )
+        SWAP   ( width 1 u )
+        ROT    ( 1 u width )
+        1-     ( 1 u width-1 )
+    ELSE
+	0      ( width u 0 )
+	SWAP   ( width 0 u )
+	ROT    ( 0 u width )
+    THEN
+    SWAP   ( flag width u )
+    DUP    ( flag width u u )
+    UWIDTH ( flag width u uwidth )
+    ROT    ( flag u uwidth width )
+    SWAP - ( flag u width-uwidth )
+
+    SPACES ( flag u )
+    SWAP   ( u flag )
+
+    IF
+        '-' EMIT
+    THEN
+    U.
+;
+
+( Finally )
+: . 0 .R SPACE ;
+
+( The real U. )
+: U. U. SPACE ;
+
+: ? ( addr -- ) @ . ;
+
