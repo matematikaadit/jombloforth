@@ -84,7 +84,6 @@
 
 \ Loop Construct
 
-
 : BEGIN IMMEDIATE
     HERE @
 ;
@@ -115,3 +114,47 @@
     HERE @ SWAP -
     SWAP !
 ;
+
+\ Comments
+: ( IMMEDIATE
+    1
+    BEGIN
+        KEY
+        DUP '(' = IF
+            DROP
+            1+
+        ELSE
+            ')' = IF
+                1-
+            THEN
+        THEN
+    DUP 0= UNTIL
+    DROP
+;
+
+( Now we can nest ( ... ) as much as we want )
+
+\ Stack Manipulation
+: NIP ( x y -- y ) SWAP DROP ;
+: TUCK ( x y -- y x y ) SWAP OVER ;
+: PICK ( x_u ... x_1 x_0 u -- x_u ... x_1 x_0 x_u )
+    1+
+    8 * ( multiply by the word size )
+    DSP@ +
+    @
+;
+
+\ Writes N spaces to stdout
+: SPACES ( n -- )
+    BEGIN
+        DUP 0>
+    WHILE
+        SPACE
+	1-
+    REPEAT
+    DROP
+;
+
+\ Standard word for manipulating BASE.
+: DECIMAL ( -- ) 10 BASE ! ;
+: HEX ( -- ) 16 BASE ! ;
