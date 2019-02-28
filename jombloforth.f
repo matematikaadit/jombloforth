@@ -247,3 +247,33 @@
 
 : ? ( addr -- ) @ . ;
 
+: WITHIN ( c a b - f )
+    -ROT ( b c a )
+    OVER ( b c a c )
+    <= IF
+        > IF ( b c )
+	    TRUE
+	ELSE
+	    FALSE
+	THEN
+    ELSE
+        2DROP
+	FALSE
+    THEN
+;
+
+: DEPTH ( -- n )
+    S0 @ DSP@ -
+    8-
+;
+
+: ALIGNED ( addr -- addr )
+    7 + 7 INVERT AND
+;
+
+: ALIGN HERE @ ALIGNED HERE ;
+
+: C,
+    HERE @ C!
+    1 HERE +!
+;
