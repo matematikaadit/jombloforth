@@ -769,7 +769,7 @@ defcode ",", COMMA
         NEXT
 
 _COMMA:
-        mov rdi, [var_HERE]    ; HERE
+        mov rdi, [var_HERE]     ; HERE
         stosq                   ; Store it.
         mov [var_HERE], rdi     ; Update HERE (incremented)
         ret
@@ -909,7 +909,7 @@ defcode "INTERPRET", INTERPRET
 
         ; Compiling - just append the word to the current dictionary definition.
         call _COMMA
-        mov rcx, [interpret_is_lit] ; Was it a literal?
+        mov rcx, [interpret_is_lit]     ; Was it a literal?
         test rcx, rcx
         jz .next
         mov rax, rbx                    ; Yes, so LIT is followed by a number.
