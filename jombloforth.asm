@@ -1,6 +1,6 @@
 ;; -*- nasm -*-
 ;;
-;; Minimal FORTH compiler for Linux x86-64 systems.
+;; Minimal FORTH interpreter for Linux x86-64 systems.
 ;; Based on jonesforth <https://github.com/nornagon/jonesforth/>
 ;;
 ;; compile it with:
