@@ -150,7 +150,7 @@
         DUP 0>
     WHILE
         SPACE
-	1-
+        1-
     REPEAT
     DROP
 ;
@@ -172,7 +172,7 @@
         '0'
     ELSE
         10 -
-	'A'
+        'A'
     THEN
     +
     EMIT
@@ -185,8 +185,8 @@
         DUP S0 @ <
     WHILE
         DUP @ U.
-	SPACE
-	8+
+        SPACE
+        8+
     REPEAT
     DROP
 ;
@@ -215,14 +215,14 @@
     SWAP ( width n )
     DUP 0< IF
         NEGATE ( width u )
-	1      ( save flag to remember that it was negative | width u 1 )
+        1      ( save flag to remember that it was negative | width u 1 )
         SWAP   ( width 1 u )
         ROT    ( 1 u width )
         1-     ( 1 u width-1 )
     ELSE
-	0      ( width u 0 )
-	SWAP   ( width 0 u )
-	ROT    ( 0 u width )
+        0      ( width u 0 )
+        SWAP   ( width 0 u )
+        ROT    ( 0 u width )
     THEN
     SWAP   ( flag width u )
     DUP    ( flag width u u )
@@ -252,13 +252,13 @@
     OVER ( b c a c )
     <= IF
         > IF ( b c )
-	    TRUE
-	ELSE
-	    FALSE
-	THEN
+            TRUE
+        ELSE
+            FALSE
+        THEN
     ELSE
         2DROP
-	FALSE
+        FALSE
     THEN
 ;
 
@@ -277,3 +277,37 @@
     HERE @ C!
     1 HERE +!
 ;
+
+: S" IMMEDIATE ( -- addr len )
+    STATE @ IF
+        ' LITSTRING ,
+        HERE @
+        @ ,
+        BEGIN
+            KEY
+            DUP '"' <>
+        WHILE
+            C,
+        REPEAT
+        DROP
+        DUP
+        HERE @ SWAP -
+        8-
+        SWAP !
+        ALIGN
+    ELSE
+        HERE @
+        BEGIN
+            KEY
+            DUP '"' <>
+        WHILE
+            OVER C!
+            1+
+        REPEAT
+        DROP
+        HERE @ -
+        HERE @
+        SWAP
+    THEN
+;
+
