@@ -520,8 +520,9 @@ _KEY:
         ret
 
 .full:
-        xor rdi, rdi          ; stdin (0)
         push rsi              ; save rsi temporarily
+        push rdi              ; and rdi
+        xor rdi, rdi          ; stdin (0)
         mov rsi, buffer       ; pointer to the buffer
         mov [currkey], rsi
         mov rdx, BUFFER_SIZE  ; how many bytes to read max
@@ -531,7 +532,8 @@ _KEY:
         jbe .eof
         add rsi, rax
         mov [bufftop], rsi
-        pop rsi               ; restore it
+        pop rdi               ; restore
+        pop rsi               ; and restore
         jmp _KEY
 
 .eof:

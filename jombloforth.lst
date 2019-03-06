@@ -2877,8 +2877,9 @@ _KEY:
  ret
 
 .full:
- xor rdi, rdi
  push rsi
+ push rdi
+ xor rdi, rdi
  mov rsi, buffer
  mov [currkey], rsi
  mov rdx, 4096
@@ -2888,6 +2889,7 @@ _KEY:
  jbe .eof
  add rsi, rax
  mov [bufftop], rsi
+ pop rdi
  pop rsi
  jmp _KEY
 
@@ -2898,16 +2900,16 @@ _KEY:
 
 [section .data]
 [sectalign 8]
-%line 543+0 jombloforth.asm
+%line 545+0 jombloforth.asm
 times (((8) - (($-$$) % (8))) % (8)) db 0
-%line 544+1 jombloforth.asm
+%line 546+1 jombloforth.asm
 currkey:
  dq buffer
 bufftop:
  dq buffer
 
 
-%line 549+0 jombloforth.asm
+%line 551+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -2933,13 +2935,13 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_EMIT]
  code_EMIT:
-%line 550+1 jombloforth.asm
+%line 552+1 jombloforth.asm
  pop rax
  call _EMIT
  lodsq
-%line 552+0 jombloforth.asm
+%line 554+0 jombloforth.asm
  jmp [rax]
-%line 553+1 jombloforth.asm
+%line 555+1 jombloforth.asm
 _EMIT:
  mov rdi, 1
  mov [emit_scratch], al
@@ -2955,7 +2957,7 @@ _EMIT:
 emit_scratch: db 0
 
 
-%line 567+0 jombloforth.asm
+%line 569+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -2981,14 +2983,14 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_WORD]
  code_WORD:
-%line 568+1 jombloforth.asm
+%line 570+1 jombloforth.asm
  call _WORD
  push rdi
  push rcx
  lodsq
-%line 571+0 jombloforth.asm
+%line 573+0 jombloforth.asm
  jmp [rax]
-%line 572+1 jombloforth.asm
+%line 574+1 jombloforth.asm
 
 _WORD:
 .ws:
@@ -3020,7 +3022,7 @@ _WORD:
 word_buffer: times 32 db 0
 
 
-%line 602+0 jombloforth.asm
+%line 604+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3046,16 +3048,16 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_NUMBER]
  code_NUMBER:
-%line 603+1 jombloforth.asm
+%line 605+1 jombloforth.asm
  pop rcx
  pop rdi
  call _NUMBER
  push rax
  push rcx
  lodsq
-%line 608+0 jombloforth.asm
+%line 610+0 jombloforth.asm
  jmp [rax]
-%line 609+1 jombloforth.asm
+%line 611+1 jombloforth.asm
 
 _NUMBER:
  xor rax, rax
@@ -3116,7 +3118,7 @@ _NUMBER:
 
 
 
-%line 668+0 jombloforth.asm
+%line 670+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3142,15 +3144,15 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_FIND]
  code_FIND:
-%line 669+1 jombloforth.asm
+%line 671+1 jombloforth.asm
  pop rcx
  pop rdi
  call _FIND
  push rax
  lodsq
-%line 673+0 jombloforth.asm
+%line 675+0 jombloforth.asm
  jmp [rax]
-%line 674+1 jombloforth.asm
+%line 676+1 jombloforth.asm
 
 _FIND:
  push rsi
@@ -3194,7 +3196,7 @@ _FIND:
  ret
 
 
-%line 716+0 jombloforth.asm
+%line 718+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3220,14 +3222,14 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_TCFA]
  code_TCFA:
-%line 717+1 jombloforth.asm
+%line 719+1 jombloforth.asm
  pop rdi
  call _TCFA
  push rdi
  lodsq
-%line 720+0 jombloforth.asm
+%line 722+0 jombloforth.asm
  jmp [rax]
-%line 721+1 jombloforth.asm
+%line 723+1 jombloforth.asm
 
 _TCFA:
  xor rax, rax
@@ -3241,7 +3243,7 @@ _TCFA:
  ret
 
 
-%line 733+0 jombloforth.asm
+%line 735+0 jombloforth.asm
 
 [section .rodata]
 
@@ -3261,7 +3263,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 [global TDFA]
  TDFA:
  dq DOCOL
-%line 734+1 jombloforth.asm
+%line 736+1 jombloforth.asm
  dq TCFA
  dq INCR8
  dq EXIT
@@ -3269,7 +3271,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 
 
 
-%line 740+0 jombloforth.asm
+%line 742+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3295,7 +3297,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_CREATE]
  code_CREATE:
-%line 741+1 jombloforth.asm
+%line 743+1 jombloforth.asm
 
  pop rcx
  pop rbx
@@ -3320,12 +3322,12 @@ times (((8) - (($-$$) % (8))) % (8)) nop
  mov [var_LATEST], rax
  mov [var_HERE], rdi
  lodsq
-%line 764+0 jombloforth.asm
- jmp [rax]
-%line 765+1 jombloforth.asm
-
-
 %line 766+0 jombloforth.asm
+ jmp [rax]
+%line 767+1 jombloforth.asm
+
+
+%line 768+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3351,13 +3353,13 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_COMMA]
  code_COMMA:
-%line 767+1 jombloforth.asm
+%line 769+1 jombloforth.asm
  pop rax
  call _COMMA
  lodsq
-%line 769+0 jombloforth.asm
+%line 771+0 jombloforth.asm
  jmp [rax]
-%line 770+1 jombloforth.asm
+%line 772+1 jombloforth.asm
 
 _COMMA:
  mov rdi, [var_HERE]
@@ -3366,7 +3368,7 @@ _COMMA:
  ret
 
 
-%line 777+0 jombloforth.asm
+%line 779+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3392,16 +3394,16 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_LBRAC]
  code_LBRAC:
-%line 778+1 jombloforth.asm
+%line 780+1 jombloforth.asm
  xor rax, rax
  mov [var_STATE], rax
  lodsq
-%line 780+0 jombloforth.asm
- jmp [rax]
-%line 781+1 jombloforth.asm
-
-
 %line 782+0 jombloforth.asm
+ jmp [rax]
+%line 783+1 jombloforth.asm
+
+
+%line 784+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3427,15 +3429,15 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_RBRAC]
  code_RBRAC:
-%line 783+1 jombloforth.asm
+%line 785+1 jombloforth.asm
  mov qword [var_STATE], 1
  lodsq
-%line 784+0 jombloforth.asm
- jmp [rax]
-%line 785+1 jombloforth.asm
-
-
 %line 786+0 jombloforth.asm
+ jmp [rax]
+%line 787+1 jombloforth.asm
+
+
+%line 788+0 jombloforth.asm
 
 [section .rodata]
 
@@ -3455,7 +3457,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 [global COLON]
  COLON:
  dq DOCOL
-%line 787+1 jombloforth.asm
+%line 789+1 jombloforth.asm
  dq $WORD
  dq CREATE
  dq LIT, DOCOL, COMMA
@@ -3464,7 +3466,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
  dq EXIT
 
 
-%line 794+0 jombloforth.asm
+%line 796+0 jombloforth.asm
 
 [section .rodata]
 
@@ -3484,7 +3486,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 [global SEMICOLON]
  SEMICOLON:
  dq DOCOL
-%line 795+1 jombloforth.asm
+%line 797+1 jombloforth.asm
  dq LIT, EXIT, COMMA
  dq LATEST, FETCH, HIDDEN
  dq LBRAC
@@ -3492,7 +3494,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 
 
 
-%line 801+0 jombloforth.asm
+%line 803+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3518,17 +3520,17 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_IMMEDATE]
  code_IMMEDATE:
-%line 802+1 jombloforth.asm
+%line 804+1 jombloforth.asm
  mov rdi, [var_LATEST]
  add rdi, 8
  xor byte [rdi], 0x80
  lodsq
-%line 805+0 jombloforth.asm
- jmp [rax]
-%line 806+1 jombloforth.asm
-
-
 %line 807+0 jombloforth.asm
+ jmp [rax]
+%line 808+1 jombloforth.asm
+
+
+%line 809+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3554,17 +3556,17 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_HIDDEN]
  code_HIDDEN:
-%line 808+1 jombloforth.asm
+%line 810+1 jombloforth.asm
  pop rdi
  add rdi, 8
  xor byte [rdi], 0x20
  lodsq
-%line 811+0 jombloforth.asm
- jmp [rax]
-%line 812+1 jombloforth.asm
-
-
 %line 813+0 jombloforth.asm
+ jmp [rax]
+%line 814+1 jombloforth.asm
+
+
+%line 815+0 jombloforth.asm
 
 [section .rodata]
 
@@ -3584,14 +3586,14 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 [global HIDE]
  HIDE:
  dq DOCOL
-%line 814+1 jombloforth.asm
+%line 816+1 jombloforth.asm
  dq $WORD
  dq FIND
  dq HIDDEN
  dq EXIT
 
 
-%line 819+0 jombloforth.asm
+%line 821+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3617,18 +3619,18 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_TICK]
  code_TICK:
-%line 820+1 jombloforth.asm
+%line 822+1 jombloforth.asm
  lodsq
  push rax
  lodsq
-%line 822+0 jombloforth.asm
+%line 824+0 jombloforth.asm
  jmp [rax]
-%line 823+1 jombloforth.asm
+%line 825+1 jombloforth.asm
 
 
 
 
-%line 826+0 jombloforth.asm
+%line 828+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3654,15 +3656,15 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_BRANCH]
  code_BRANCH:
-%line 827+1 jombloforth.asm
+%line 829+1 jombloforth.asm
  add rsi, [rsi]
  lodsq
-%line 828+0 jombloforth.asm
- jmp [rax]
-%line 829+1 jombloforth.asm
-
-
 %line 830+0 jombloforth.asm
+ jmp [rax]
+%line 831+1 jombloforth.asm
+
+
+%line 832+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3688,20 +3690,20 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_ZBRANCH]
  code_ZBRANCH:
-%line 831+1 jombloforth.asm
+%line 833+1 jombloforth.asm
  pop rax
  test rax, rax
  jz code_BRANCH
  lodsq
  lodsq
-%line 835+0 jombloforth.asm
+%line 837+0 jombloforth.asm
  jmp [rax]
-%line 836+1 jombloforth.asm
+%line 838+1 jombloforth.asm
 
 
 
 
-%line 839+0 jombloforth.asm
+%line 841+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3727,7 +3729,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_LITSTRING]
  code_LITSTRING:
-%line 840+1 jombloforth.asm
+%line 842+1 jombloforth.asm
  lodsq
  push rsi
  push rax
@@ -3735,12 +3737,12 @@ times (((8) - (($-$$) % (8))) % (8)) nop
  add rsi, 0b111
  and rsi, ~0b111
  lodsq
-%line 846+0 jombloforth.asm
- jmp [rax]
-%line 847+1 jombloforth.asm
-
-
 %line 848+0 jombloforth.asm
+ jmp [rax]
+%line 849+1 jombloforth.asm
+
+
+%line 850+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3766,7 +3768,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_TELL]
  code_TELL:
-%line 849+1 jombloforth.asm
+%line 851+1 jombloforth.asm
  mov rcx, rsi
  mov rdi, 1
  pop rdx
@@ -3776,14 +3778,14 @@ times (((8) - (($-$$) % (8))) % (8)) nop
  syscall
  pop rsi
  lodsq
-%line 857+0 jombloforth.asm
+%line 859+0 jombloforth.asm
  jmp [rax]
-%line 858+1 jombloforth.asm
+%line 860+1 jombloforth.asm
 
 
 
 
-%line 861+0 jombloforth.asm
+%line 863+0 jombloforth.asm
 
 [section .rodata]
 
@@ -3803,7 +3805,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 [global FORTYTWO]
  FORTYTWO:
  dq DOCOL
-%line 862+1 jombloforth.asm
+%line 864+1 jombloforth.asm
  dq LIT
  dq 42
  dq EXIT
@@ -3811,7 +3813,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 
 
 
-%line 868+0 jombloforth.asm
+%line 870+0 jombloforth.asm
 
 [section .rodata]
 
@@ -3831,13 +3833,13 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 [global QUIT]
  QUIT:
  dq DOCOL
-%line 869+1 jombloforth.asm
+%line 871+1 jombloforth.asm
  dq R0, RSPSTORE
  dq INTERPRET
  dq BRANCH, -16
 
 
-%line 873+0 jombloforth.asm
+%line 875+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -3863,7 +3865,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_INTERPRET]
  code_INTERPRET:
-%line 874+1 jombloforth.asm
+%line 876+1 jombloforth.asm
  call _WORD
 
 
@@ -3909,9 +3911,9 @@ times (((8) - (($-$$) % (8))) % (8)) nop
  call _COMMA
 .next:
  lodsq
-%line 918+0 jombloforth.asm
+%line 920+0 jombloforth.asm
  jmp [rax]
-%line 919+1 jombloforth.asm
+%line 921+1 jombloforth.asm
 
 
 .exec:
@@ -3927,9 +3929,9 @@ times (((8) - (($-$$) % (8))) % (8)) nop
 .litexec:
  push rbx
  lodsq
-%line 933+0 jombloforth.asm
+%line 935+0 jombloforth.asm
  jmp [rax]
-%line 934+1 jombloforth.asm
+%line 936+1 jombloforth.asm
 
 
 .numerror:
@@ -3960,9 +3962,9 @@ times (((8) - (($-$$) % (8))) % (8)) nop
  pop rsi
 
  lodsq
-%line 963+0 jombloforth.asm
+%line 965+0 jombloforth.asm
  jmp [rax]
-%line 964+1 jombloforth.asm
+%line 966+1 jombloforth.asm
 
 [section .rodata]
 errmsg: db "PARSE ERROR: "
@@ -3971,16 +3973,16 @@ errmsgnl: db 0x0A
 
 [section .data]
 [sectalign 8]
-%line 971+0 jombloforth.asm
+%line 973+0 jombloforth.asm
 times (((8) - (($-$$) % (8))) % (8)) nop
-%line 972+1 jombloforth.asm
+%line 974+1 jombloforth.asm
 interpret_is_lit:
  dq 0
 
 
 
 
-%line 977+0 jombloforth.asm
+%line 979+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -4006,18 +4008,18 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_CHAR]
  code_CHAR:
-%line 978+1 jombloforth.asm
+%line 980+1 jombloforth.asm
  call _WORD
  xor rax, rax
  mov al, [rdi]
  push rax
  lodsq
-%line 982+0 jombloforth.asm
- jmp [rax]
-%line 983+1 jombloforth.asm
-
-
 %line 984+0 jombloforth.asm
+ jmp [rax]
+%line 985+1 jombloforth.asm
+
+
+%line 986+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -4043,13 +4045,13 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_EXECUTE]
  code_EXECUTE:
-%line 985+1 jombloforth.asm
+%line 987+1 jombloforth.asm
  pop rax
  jmp [rax]
 
 
 
-%line 989+0 jombloforth.asm
+%line 991+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -4075,7 +4077,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_SYSCALL3]
  code_SYSCALL3:
-%line 990+1 jombloforth.asm
+%line 992+1 jombloforth.asm
  mov rcx, rsi
  pop rax
  pop rdi
@@ -4086,12 +4088,12 @@ times (((8) - (($-$$) % (8))) % (8)) nop
  pop rsi
  push rax
  lodsq
-%line 999+0 jombloforth.asm
- jmp [rax]
-%line 1000+1 jombloforth.asm
-
-
 %line 1001+0 jombloforth.asm
+ jmp [rax]
+%line 1002+1 jombloforth.asm
+
+
+%line 1003+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -4117,7 +4119,7 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_SYSCALL2]
  code_SYSCALL2:
-%line 1002+1 jombloforth.asm
+%line 1004+1 jombloforth.asm
  mov rcx, rsi
  pop rax
  pop rdi
@@ -4127,12 +4129,12 @@ times (((8) - (($-$$) % (8))) % (8)) nop
  pop rsi
  push rax
  lodsq
-%line 1010+0 jombloforth.asm
- jmp [rax]
-%line 1011+1 jombloforth.asm
-
-
 %line 1012+0 jombloforth.asm
+ jmp [rax]
+%line 1013+1 jombloforth.asm
+
+
+%line 1014+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -4158,18 +4160,18 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_SYSCALL1]
  code_SYSCALL1:
-%line 1013+1 jombloforth.asm
+%line 1015+1 jombloforth.asm
  pop rax
  pop rdi
  syscall
  push rax
  lodsq
-%line 1017+0 jombloforth.asm
- jmp [rax]
-%line 1018+1 jombloforth.asm
-
-
 %line 1019+0 jombloforth.asm
+ jmp [rax]
+%line 1020+1 jombloforth.asm
+
+
+%line 1021+0 jombloforth.asm
 
 [section .rodata]
 [sectalign 8]
@@ -4195,14 +4197,14 @@ times (((8) - (($-$$) % (8))) % (8)) db 0
 times (((8) - (($-$$) % (8))) % (8)) nop
 [global code_SYSCALL0]
  code_SYSCALL0:
-%line 1020+1 jombloforth.asm
+%line 1022+1 jombloforth.asm
  pop rax
  syscall
  push rax
  lodsq
-%line 1023+0 jombloforth.asm
+%line 1025+0 jombloforth.asm
  jmp [rax]
-%line 1024+1 jombloforth.asm
+%line 1026+1 jombloforth.asm
 
 
 
@@ -4224,16 +4226,16 @@ set_up_data_segment:
 
 [section .bss]
 [sectalign 4096]
-%line 1044+0 jombloforth.asm
+%line 1046+0 jombloforth.asm
 times (((4096) - (($-$$) % (4096))) % (4096)) nop
-%line 1045+1 jombloforth.asm
+%line 1047+1 jombloforth.asm
 return_stack:
  resb 8192
 return_stack_top:
 
 [sectalign 4096]
-%line 1049+0 jombloforth.asm
+%line 1051+0 jombloforth.asm
 times (((4096) - (($-$$) % (4096))) % (4096)) nop
-%line 1050+1 jombloforth.asm
+%line 1052+1 jombloforth.asm
 buffer:
  resb 4096
