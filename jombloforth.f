@@ -278,12 +278,6 @@
     1 HERE +!
 ;
 
-: BYE
-    0
-    SYS_EXIT
-    SYSCALL1
-;
-
 : S" IMMEDIATE ( -- addr len )
     STATE @ IF
         ' LITSTRING ,
@@ -316,4 +310,3 @@
         SWAP
     THEN
 ;
-
