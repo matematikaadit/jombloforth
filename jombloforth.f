@@ -310,3 +310,20 @@
         SWAP
     THEN
 ;
+
+: ." IMMEDIATE
+    STATE @ IF
+        [COMPILE] S"
+        ' TELL ,
+    ELSE
+        BEGIN
+            KEY
+            DUP '"' = IF
+                DROP
+                EXIT
+            THEN
+            EMIT
+        AGAIN
+    THEN
+;
+
