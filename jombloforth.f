@@ -96,7 +96,7 @@
 
 : AGAIN IMMEDIATE
     ' BRANCH ,
-    HERE @
+    HERE @ -
     ,
 ;
 
