@@ -327,3 +327,81 @@
     THEN
 ;
 
+( Constant and Variables )
+
+: CONSTANT
+    WORD
+    CREATE
+    DOCOL ,
+    ' LIT ,
+    ,
+    ' EXIT ,
+;
+
+: ALLOT ( n -- addr )
+    HERE @ SWAP
+    HERE +!
+;
+
+: CELLS ( n -- n ) 8 * ;
+
+: VARIABLE
+    1 CELLS ALLOT
+    WORD CREATE
+    DOCOL ,
+    ' LIT ,
+    ,
+    ' EXIT ,
+;
+
+: VALUE ( n -- )
+    WORD CREATE
+    DOCOL ,
+    ' LIT ,
+    ,
+    ' EXIT ,
+;
+
+: TO IMMEDIATE ( n -- )
+    WORD
+    FIND
+    >DFA
+    8+
+    STATE @ IF
+        ' LIT ,
+        ,
+        ' ! ,
+    ELSE
+        !
+    THEN
+;
+
+: +TO IMMEDIATE
+    WORD
+    FIND
+    >DFA
+    8+
+    STATE @ IF
+        ' LIT ,
+        ,
+        ' +! ,
+    ELSE
+        +!
+    THEN
+;
+
+: ID.
+    8+
+    DUP C@
+    F_LENMASK AND
+    BEGIN
+        DUP 0>
+    WHILE
+        SWAP 1+
+        DUP C@
+        EMIT
+        SWAP 1-
+    REPEAT
+    2 DROP ( len addr -- )
+;
+
