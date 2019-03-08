@@ -386,6 +386,7 @@ defcode "C@", FETCHBYTE
         pop rbx
         xor rax, rax
         mov al, [rbx]
+        push rax
         NEXT
 
 defcode "C@C!", CCOPY

@@ -390,7 +390,7 @@
     THEN
 ;
 
-: ID.
+: ID. ( addr -- )
     8+
     DUP C@
     F_LENMASK AND
