@@ -402,6 +402,6 @@
         EMIT
         SWAP 1-
     REPEAT
-    2 DROP ( len addr -- )
+    2DROP ( len addr -- )
 ;
 
