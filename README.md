@@ -57,17 +57,17 @@ typed and separated by whitespace. They takes their input from the
 stack and put the result back into them (if there's any). The `+`,
 `.`, and `CR` below are example of forth words.
 
-Type the following example which will add the two numbers and then
-print the result.
+The following example will add the two numbers and then print the
+result.
 
 ```
 42 24 + . CR
 ```
 
 After typing 42 and 24, we will have two number in the stack. The `+`
-will pop those two number and put the result of the addition, 66, back
-into the stack. The `.` will pop that number and print it. And finally
-CR just print newline.
+will pop those two number, add them, and push the result, 66, back
+into the stack. The `.` will pop that 66 and print it. And finally
+CR will just print newline.
 
 To quit the program, press CTRL+D.
 
