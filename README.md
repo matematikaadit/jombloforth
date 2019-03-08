@@ -16,8 +16,7 @@ ld -o jombloforth jombloforth.o
 It will create a statically linked 64-bit elf executable with
 debugging symbol on.
 
-Alternatively, for convenience, the jombloforth make target is provided.
-To invoke it, just run:
+Alternatively, you can just run this if gnu make is installed.
 
 ```
 make jombloforth
@@ -40,7 +39,7 @@ file and the stdin (`-` part). And then `jombloforth` executable will
 wait your input after interpreting (or compiling) the content of
 jombloforth.f.
 
-And again, for convenience, you can just run this instead:
+And again, for convenience, you can just run this make target:
 
 ```
 make run
