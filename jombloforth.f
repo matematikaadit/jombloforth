@@ -545,3 +545,91 @@
     DROP
     0
 ;
+
+: SEE
+    WORD FIND
+    HERE @
+    LATEST @
+
+    BEGIN
+        2 PICK
+        OVER
+        <>
+    WHILE
+        NIP
+        DUP @
+    REPEAT
+
+    DROP
+    SWAP
+
+    ':' EMIT SPACE DUP ID. SPACE
+    DUP ?IMMEDIATE IF ." IMMEDIATE " THEN
+
+    >DFA
+
+    BEGIN             ( end start )
+        2DUP >
+    WHILE
+        DUP @         ( end start codeword )
+        CASE
+        ' LIT OF      ( is it LIT ? )
+            8 + DUP @ ( get next word )
+            .         ( and print it )
+        ENDOF
+        ' LITSTRING OF
+            [ CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
+            8 + DUP @                              ( get the length )
+            SWAP 8 + SWAP                          ( end start+8 length )
+            2DUP TELL                              ( print the string )
+            '"' EMIT SPACE
+            + ALIGNED                              ( end start+8+len, aligned )
+            8 -                                    ( because we're about to add 8 below )
+        ENDOF
+        ' 0BRANCH OF
+            ." 0BRANCH ( "
+            8 + DUP @
+            .
+            ." ) "
+        ENDOF
+        ' BRANCH OF
+            ." BRANCH ( "
+            8 + DUP @
+            .
+            ." ) "
+        ENDOF
+        ' ' OF
+            [ CHAR ' ] LITERAL EMIT SPACE
+            8 + DUP @
+            CFA>
+            ID. SPACE
+        ENDOF
+        ' EXIT OF
+            2DUP
+            8 +
+            <> IF
+                ." EXIT "
+            THEN
+        ENDOF
+            DUP
+            CFA>
+            ID. SPACE
+        ENDCASE
+        8 +
+    REPEAT
+    ';' EMIT CR
+    2DROP
+;
+
+: :NONAME
+    0 0 CREATE
+    HERE @
+    DOCOL ,
+    ]
+;
+
+: ['] IMMEDIATE
+    ' LIT ,
+;
+
+
