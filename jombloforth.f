@@ -155,6 +155,17 @@
     DROP
 ;
 
+\ EXTRA: Writes N zeroes to stdout
+: ZEROES ( n -- )
+    BEGIN
+        DUP 0>
+    WHILE
+        '0' EMIT
+        1-
+    REPEAT
+    DROP
+;
+
 \ Standard word for manipulating BASE.
 : DECIMAL ( -- ) 10 BASE ! ;
 : HEX ( -- ) 16 BASE ! ;
@@ -208,6 +219,17 @@
     ROT
     SWAP -
     SPACES
+    U.
+;
+
+\ EXTRA, print zeroes padded unsigned number
+: ZU.R ( u width -- )
+    SWAP
+    DUP
+    UWIDTH
+    ROT
+    SWAP -
+    ZEROES
     U.
 ;
 
@@ -405,3 +427,121 @@
     2DROP ( len addr -- )
 ;
 
+: ?HIDDEN
+    8+
+    C@
+    F_HIDDEN AND
+;
+
+: ?IMMEDIATE
+    8+
+    C@
+    F_IMMED AND
+;
+
+: WORDS
+    LATEST @
+    BEGIN
+        ?DUP
+    WHILE
+        DUP ?HIDDEN NOT IF
+            DUP ID.
+            SPACE
+        THEN
+        @
+    REPEAT
+    CR
+;
+
+: FORGET
+    WORD FIND
+    DUP @ LATEST !
+    HERE !
+;
+
+: DUMP ( addr len -- )
+    BASE @ -ROT
+    HEX
+
+    BEGIN
+        ?DUP           ( while len > 0 )
+    WHILE
+        OVER 16 ZU.R   ( print the address )
+        SPACE
+        ( print up to 16 words on this line )
+        2DUP           ( addr len addr len )
+        1- 15 AND 1+   ( addr len addr linelen )
+        BEGIN
+            ?DUP       ( while linelen > 0 )
+        WHILE
+            SWAP       ( addr len linelen addr )
+            DUP C@     ( addr len linelen addr byte )
+            2 ZU.R SPACE ( print the byte )
+            1+ SWAP 1- ( addr len linelen addr -- addr len addr+1 linelen-1 )
+        REPEAT
+        DROP           ( addr len )
+
+        ( print the ASCII equivalents )
+        2DUP 1- 15 AND 1+ ( addr len addr linelen )
+        BEGIN
+            ?DUP
+        WHILE
+            SWAP       ( addr len linelen addr )
+            DUP C@     ( addr len linelen addr byte )
+            DUP 32 128 WITHIN IF ( 32 <= c < 128? )
+                EMIT
+            ELSE
+                DROP '.' EMIT
+            THEN
+            1+ SWAP 1-
+        REPEAT
+        DROP
+        CR
+        DUP 1- 15 AND 1+
+        TUCK
+        -
+        >R + R>
+    REPEAT
+    DROP
+    BASE !
+;
+
+: CASE IMMEDIATE
+    0
+;
+
+: OF IMMEDIATE
+    ' OVER ,
+    ' = ,
+    [COMPILE] IF
+    ' DROP ,
+;
+
+: ENDOF IMMEDIATE
+    [COMPILE] ELSE
+;
+
+: ENDCASE IMMEDIATE
+    ' DROP ,
+    BEGIN
+        ?DUP
+    WHILE
+        [COMPILE] THEN
+    REPEAT
+;
+
+: CFA>
+    LATEST @
+    BEGIN
+        ?DUP
+    WHILE
+        2DUP SWAP
+        < IF
+            NIP
+            EXIT
+        THEN
+        @
+    REPEAT
+    DROP
+    0
+;
