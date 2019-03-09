@@ -293,7 +293,7 @@
     7 + 7 INVERT AND
 ;
 
-: ALIGN HERE @ ALIGNED HERE ;
+: ALIGN HERE @ ALIGNED HERE ! ;
 
 : C,
     HERE @ C!
@@ -304,7 +304,7 @@
     STATE @ IF
         ' LITSTRING ,
         HERE @
-        @ ,
+        0 ,
         BEGIN
             KEY
             DUP '"' <>
@@ -466,7 +466,7 @@
     BEGIN
         ?DUP           ( while len > 0 )
     WHILE
-        OVER 16 ZU.R   ( print the address )
+        OVER 8 ZU.R    ( print the address )
         SPACE
         ( print up to 16 words on this line )
         2DUP           ( addr len addr len )
