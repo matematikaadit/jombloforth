@@ -708,3 +708,59 @@
     CR
 ;
 
+( C String )
+
+: Z" IMMEDIATE
+    STATE @ IF
+        ' LITSTRING ,
+        HERE @
+        0 ,
+        BEGIN
+            KEY
+            DUP '"' <>
+        WHILE
+            HERE @ C!
+            1 HERE +!
+        REPEAT
+        0 HERE @ C!
+        1 HERE +!
+        DROP
+        DUP
+        HERE @ SWAP -
+        8-
+        SWAP !
+        ALIGN
+        ' DROP ,
+    ELSE
+        HERE @
+        BEGIN
+            KEY
+            DUP '"' <>
+        WHILE
+            OVER C!
+            1+
+        REPEAT
+        DROP
+        0 SWAP C!
+        HERE @
+    THEN
+;
+
+: STRLEN
+    DUP
+    BEGIN
+        DUP C@ 0<>
+    WHILE
+        1+
+    REPEAT
+    SWAP -
+;
+
+: CSTRING
+    SWAP OVER
+    HERE @ SWAP
+    CMOVE
+    HERE @ +
+    0 SWAP C!
+    HERE @
+;
