@@ -764,3 +764,48 @@
     0 SWAP C!
     HERE @
 ;
+
+( The Environment )
+
+: ARGC S0 @ @ ;
+
+: ARGV ( n -- str u )
+    1+ CELLS S0 @ +
+    @
+    DUP STRLEN
+;
+
+: ENVIRON
+    ARGC
+    2 +
+    CELLS
+    S0 @ +
+;
+
+: BYE 0 SYS_EXIT SYSCALL1 ;
+
+: GET-BRK ( -- brkpoint ) 0 SYS_BRK SYSCALL1 ;
+
+: UNUSED ( -- n ) GET-BRK HERE @ - 8 / ;
+
+: BRK ( brkpoint -- ) SYS_BRK SYSCALL1 ;
+
+: MORECORE ( cells -- ) CELLS GET-BRK + BRK ;
+
+: R/O ( -- fam ) O_RDONLY ;
+: R/W ( -- fam ) O_RDWR ;
+
+: OPEN-FILE ( addr u fam -- fd 0 (if successful) | c-addr u fam -- fd errno (if there was an error) )
+    -ROT
+    CSTRING
+    SYS_OPEN SYSCALL2
+    DUP
+    DUP 0< IF
+        NEGATE
+    ELSE
+        DROP 0
+    THEN
+;
+
+
+
