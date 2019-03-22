@@ -1,4 +1,4 @@
-all: jombloforth jombloforth.lst
+all: jombloforth
 
 jombloforth.o: jombloforth.asm unistd_64.inc
 	nasm -g -F dwarf -f elf64 -o jombloforth.o jombloforth.asm
