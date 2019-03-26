@@ -57,7 +57,7 @@
 ;; The version of this program, not to be mistaken as how many years the
 ;; author has been single. Please increment this number each time one year
 ;; passed.
-%assign JOMBLO_VERSION 1
+%assign JOMBLO_VERSION 2
 ;; (that's a joke, btw)
 
 ;; Our first word
