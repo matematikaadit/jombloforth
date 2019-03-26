@@ -807,5 +807,53 @@
     THEN
 ;
 
+: CREATE-FILE ( similar to OPEN-FILE )
+    O_CREAT OR
+    O_TRUNC OR
+    -ROT
+    CSTRING
+    420 -ROT
+    SYS_OPEN SYSCALL3
+    DUP
+    DUP 0< IF
+        NEGATE
+    ELSE
+        DROP 0
+    THEN
+;
 
+: CLOSE-FILE
+    SYS_CLOSE SYSCALL1
+    NEGATE
+;
 
+: READ-FILE
+    >R SWAP R>
+    SYS_READ SYSCALL3
+    DUP
+    DUP 0< IF
+        NEGATE
+    ELSE
+        DROP 0
+    THEN
+;
+
+: PERROR
+    TELL
+    ':' EMIT SPACE
+    ." ERRNO="
+    . CR
+;
+
+( TODO: translate jonesforth x86 assembler into x64 )
+
+: WELCOME
+    S" TEST-MODE" FIND NOT IF
+        ." Jombloforth version " VERSION . CR
+        UNUSED . ." cells remaining" CR
+        ." ok " CR
+    THEN
+;
+
+WELCOME
+HIDE WELCOME
