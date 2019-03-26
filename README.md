@@ -34,7 +34,7 @@ Will print 66 followed by newline.
 Defining new word and runs it:
 
 ```
-: double dup + ;
+: double DUP + ;
 100 double . CR
 ```
 
